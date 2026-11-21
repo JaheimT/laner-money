@@ -1,0 +1,35 @@
+# --- Build output -------------------------------------------------------
+# CMake builds out-of-source into build/ (or build-*/ for extra configs,
+# e.g. build-release/). Never commit compiled artefacts.
+build/
+build-*/
+
+# --- Runtime data: NEVER commit -----------------------------------------
+# The SQLite database holds real financial data. Ignore every DB file in
+# data/, plus SQLite's side files, which contain that same data:
+#   -journal  rollback journal (default mode)
+#   -wal      write-ahead log (if WAL mode is enabled later)
+#   -shm      shared-memory index for WAL
+# data/.gitkeep is re-included so the folder itself exists after a clone.
+data/*
+!data/.gitkeep
+
+# Belt and braces: a stray DB anywhere else in the tree is ignored too.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# --- Editors / OS -------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# --- Tooling ------------------------------------------------------------
+# clangd/LSP index and the compile DB symlink some setups create.
+.cache/
+compile_commands.json
