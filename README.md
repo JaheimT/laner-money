@@ -52,13 +52,29 @@ auth, locks, sessions).
 
 ## Building
 
+Dependencies: a C compiler, CMake ≥ 3.20, SQLite 3.31+ with headers.
+
 ```bash
-mkdir build && cd build
-cmake ..
-make
+# Arch
+sudo pacman -S --needed base-devel cmake sqlite
+# Debian / Ubuntu
+sudo apt install build-essential cmake libsqlite3-dev
 ```
 
-(Build instructions will expand as the project grows.)
+Build and run (from the repo root — the database lives at `data/laner.db`):
+
+```bash
+cmake -S . -B build          # Debug by default: ASan + UBSan enabled
+cmake --build build
+./build/laner
+```
+
+Release (optimised, hardened, no sanitizers):
+
+```bash
+cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
+cmake --build build-release
+```
 
 ## Project layout
 
