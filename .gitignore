@@ -1,8 +1,12 @@
-# --- Build output -------------------------------------------------------
-# CMake builds out-of-source into build/ (or build-*/ for extra configs,
-# e.g. build-release/). Never commit compiled artefacts.
-build/
-build-*/
+# --- Python --------------------------------------------------------------
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# --- Secrets / local config: NEVER commit --------------------------------
+.env
+.env.*
 
 # --- Runtime data: NEVER commit -----------------------------------------
 # The SQLite database holds real financial data. Ignore every DB file in
@@ -28,8 +32,3 @@ data/*
 *.swp
 *~
 .DS_Store
-
-# --- Tooling ------------------------------------------------------------
-# clangd/LSP index and the compile DB symlink some setups create.
-.cache/
-compile_commands.json

@@ -2,95 +2,115 @@
 
 *Your money, your server, your rules.*
 
-A self-hosted personal finance platform, built from scratch in C.
+A self-hosted personal finance app for my homelab, built in Python.
 
 ## What this is
 
-Laner Money is a lightweight, self-hosted personal finance app. It's built
-deliberately close to the metal: a hand-rolled HTTP server over raw sockets,
-SQLite for storage, and no web framework in between. That's not the "easy"
-way to build a finance app — it's the point. This project exists to build
-real systems and security engineering skills through the friction of doing
-things manually, while ending up with something genuinely useful to run
-day-to-day on a home server.
+Laner Money is a lightweight, self-hosted personal finance app: track
+transactions, see where the money goes, and keep the data on my own
+hardware. It runs in an LXC container on a Proxmox homelab, reachable over
+the LAN and Tailscale only, never the public internet.
 
-## Why it's built this way
-
-| Decision | Reasoning |
-|---|---|
-| C | Core language requirement for university coursework; also the best way to actually understand memory, pointers, and the cost of abstractions. |
-| Hand-rolled HTTP over raw sockets | No framework hiding the parsing, request handling, or attack surface. The HTTP layer *is* part of the security curriculum here. |
-| SQLite | Single-file, zero-server-process storage. Minimal deployment footprint, easy backups, easy to self-host. |
-| CMake | Standard, portable build tooling that scales as the project grows past a single `gcc` command. |
-| Minimal dependencies | Keeps self-hosting realistic for me and for anyone else who wants to run this on their own hardware. |
-
-## Status
-
-Early scaffolding. Not yet functional. See `docs/decisions/` for design
-decisions as they're made, and commit history for progress.
+It started life in C with a hand-rolled HTTP server (see `archive/` and
+`docs/decisions/0003-switch-to-python.md`). It's now Python, so it's usable
+sooner. The security mindset came across unchanged.
 
 ## Goals (priority order)
 
-1. Learn C properly, for university and beyond
-2. Build real-world security engineering skills — secure coding practice, not just theory
-3. Build a portfolio piece that demonstrates real systems work
-4. End up with a tool I actually use and can keep extending long-term
+1. **Usable first, learning second.** Something I actually use every week,
+   as soon as possible.
+2. Build real-world security engineering skills: secure coding practice,
+   not just theory.
+3. A portfolio piece that shows a real, deployed, secure app.
+4. Keep it small enough to self-host easily and extend long-term.
 
 ## Stack
 
-- **Language:** C
-- **Build system:** CMake
-- **Storage:** SQLite
-- **Web layer:** Hand-rolled HTTP parser/server over raw sockets (no libcurl/libmicrohttpd/etc.)
-- **Deployment:** Self-hosted, single binary + single SQLite file, minimal deps
+| Part | Choice | Why |
+|---|---|---|
+| Language | Python 3.11+ | Fast to build in; 3.11 is what Debian 12 LXC templates ship. |
+| Web framework | FastAPI + Uvicorn | Small, typed, well documented, with form handling built in. |
+| Database | SQLite via SQLAlchemy ORM | One file, no server process, easy backups. The ORM means no hand-built SQL. |
+| Templates | Jinja2 (server-rendered HTML) | No JavaScript build step; autoescaping on by default. |
+| Forms | python-multipart | Required by FastAPI to read HTML form posts. |
+
+## Security from day one
+
+- **SQL:** only through the SQLAlchemy ORM, which sends values as bound
+  parameters. No SQL is ever built from strings.
+- **Input:** every field is validated and length-limited (`app/validation.py`).
+  Request bodies are capped at 10 KB.
+- **CSRF:** every form carries a random token that must match a cookie.
+- **Output:** Jinja2 autoescaping, plus a strict Content-Security-Policy.
+- **Money:** stored as integer pence and parsed with `Decimal`, never float.
+- **Data file:** `data/laner.db` is created with mode `0600`.
+- **No debug in production:** API docs only exist with `LANER_ENV=dev`. Never
+  run with `--reload` outside development.
+- **No secrets in code:** configuration comes from environment variables.
+- **Network:** binds to `127.0.0.1` for now. LAN/Tailscale access waits until
+  there's a login.
 
 ## Design language
 
-Solarpunk-influenced — earth tones (moss green, ochre, bark brown, sand),
+Solarpunk-influenced: earth tones (moss green, ochre, bark brown, sand),
 with violet reserved specifically for security/trust states (encryption,
 auth, locks, sessions).
 
-## Building
+## Setup
 
-Dependencies: a C compiler, CMake ≥ 3.20, SQLite 3.31+ with headers.
+Needs Python 3.11 or newer.
 
 ```bash
 # Arch
-sudo pacman -S --needed base-devel cmake sqlite
+sudo pacman -S --needed python
 # Debian / Ubuntu
-sudo apt install build-essential cmake libsqlite3-dev
+sudo apt install python3 python3-venv
+
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt        # add -dev to run the tests
 ```
 
-Build and run (from the repo root — the database lives at `data/laner.db`):
+## Running
+
+From the repo root:
 
 ```bash
-cmake -S . -B build          # Debug by default: ASan + UBSan enabled
-cmake --build build
-./build/laner
+# Development (enables /docs)
+LANER_ENV=dev .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+# Normal use
+.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Release (optimised, hardened, no sanitizers):
+Then open <http://127.0.0.1:8000>.
+
+| Environment variable | Default | Meaning |
+|---|---|---|
+| `LANER_DB_PATH` | `data/laner.db` | Where the SQLite file lives |
+| `LANER_ENV` | *(unset)* | `dev` turns on the API docs pages |
+
+## Tests
 
 ```bash
-cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
-cmake --build build-release
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/python -m pytest -q
 ```
 
 ## Project layout
 
 ```
-src/
-  core/     — application logic, models, business rules
-  db/       — SQLite access layer
-  http/     — hand-rolled HTTP server (sockets, parsing, routing)
-include/    — public headers
-tests/      — test files
-docs/
-  decisions/ — architecture decision records (ADRs) — why we chose what we chose
-data/       — local SQLite db file lives here at runtime (gitignored)
-scripts/    — dev/deploy helper scripts
+app/
+  main.py        — routes, CSRF, security headers
+  models.py      — database setup and the Transaction model
+  validation.py  — form input rules
+  templates/     — Jinja2 HTML
+  static/        — CSS
+tests/           — pytest tests
+docs/decisions/  — architecture decision records: why we chose what we chose
+data/            — SQLite database at runtime (gitignored)
+archive/         — retired code (the C version), kept for history
 ```
 
 ## License
 
-MIT — see `LICENSE`.
+MIT, see `LICENSE`.

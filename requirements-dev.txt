@@ -1,0 +1,4 @@
+# Development/test only — never needed on the server.
+-r requirements.txt
+pytest==9.2.0
+httpx2==2.16.2   # used by FastAPI's TestClient

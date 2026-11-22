@@ -1,4 +1,4 @@
 # CLAUDE.md
 
-Read docs/roadmap.md before every task. Only work on the CURRENT
-milestone, one step at a time.
+Python rewrite (ADR 0003). Only do the step the user names, one step at a
+time. The old C roadmap is archived; a Python roadmap is still to be written.

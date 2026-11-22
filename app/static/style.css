@@ -1,0 +1,96 @@
+/* Laner Money — solarpunk earth tones.
+ * Violet is reserved for security/trust states (auth, sessions, locks):
+ * it's defined here but intentionally unused until login exists. */
+:root {
+  --moss: #4f6b3a;
+  --moss-dark: #3a5029;
+  --ochre: #c08a2e;
+  --bark: #5a4332;
+  --bark-dark: #3b2c21;
+  --sand: #efe6d2;
+  --sand-light: #f8f3e8;
+  --clay: #a4472f;     /* errors / money out */
+  --violet: #6b4c9a;   /* security states only */
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--sand);
+  color: var(--bark-dark);
+  line-height: 1.5;
+}
+
+.site-header {
+  background: var(--moss-dark);
+  color: var(--sand-light);
+  padding: 1.25rem 1.5rem;
+  border-bottom: 4px solid var(--ochre);
+}
+.site-header h1 { margin: 0; font-size: 1.5rem; letter-spacing: 0.02em; }
+.tagline { margin: 0.2rem 0 0; opacity: 0.85; font-size: 0.95rem; }
+
+main { max-width: 960px; margin: 1.5rem auto; padding: 0 1rem; }
+
+.card {
+  background: var(--sand-light);
+  border: 1px solid #d8ccb0;
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.card h2 { margin-top: 0; color: var(--bark); font-size: 1.15rem; }
+
+.tx-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.9rem 1rem;
+  align-items: start;
+}
+.tx-form label { display: flex; flex-direction: column; gap: 0.3rem; font-weight: 600; font-size: 0.9rem; }
+.tx-form .wide { grid-column: 1 / -1; }
+.tx-form input, .tx-form select {
+  font: inherit;
+  font-weight: 400;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #c9b994;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--bark-dark);
+}
+.tx-form input:focus, .tx-form select:focus { outline: 2px solid var(--ochre); outline-offset: 1px; }
+.tx-form button {
+  grid-column: 1 / -1;
+  justify-self: start;
+  font: inherit;
+  font-weight: 600;
+  padding: 0.55rem 1.6rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--moss);
+  color: var(--sand-light);
+  cursor: pointer;
+}
+.tx-form button:hover { background: var(--moss-dark); }
+
+.field-error { color: var(--clay); font-weight: 400; font-size: 0.85rem; }
+.error-summary {
+  background: #f6e1d9;
+  border-left: 4px solid var(--clay);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+}
+
+.list-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+.balance { margin: 0; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 0.55rem 0.5rem; border-bottom: 1px solid #e2d7bf; }
+th { color: var(--bark); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.in { color: var(--moss); }
+.out { color: var(--clay); }
+.empty { color: var(--bark); opacity: 0.8; }

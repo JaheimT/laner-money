@@ -1,0 +1,7 @@
+# Runtime dependencies, pinned to exact versions so the homelab install
+# matches what was tested. Upgrade deliberately: bump, test, commit.
+fastapi==0.165.0
+uvicorn==0.54.0
+SQLAlchemy==2.1.9
+Jinja2==3.1.6
+python-multipart==0.0.34
