@@ -125,3 +125,30 @@ target_link_libraries(laner PRIVATE SQLite::SQLite3 laner_build_flags)
 # One source of truth for the version: project(VERSION ...) above.
 # Becomes `#define LANER_VERSION "0.1.0"` inside the C code.
 target_compile_definitions(laner PRIVATE LANER_VERSION="${PROJECT_VERSION}")
+
+# ---------------------------------------------------------------------------
+# Core library
+# ---------------------------------------------------------------------------
+# Application logic lives in a static library rather than directly in the
+# `laner` executable, so the tests link the exact same compiled code that
+# ships. include/ is PUBLIC: anything linking laner_core can #include
+# "money.h" without repeating the path.
+add_library(laner_core STATIC
+    src/core/money.c
+)
+target_include_directories(laner_core PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(laner_core PRIVATE laner_build_flags)
+
+# ---------------------------------------------------------------------------
+# Tests — run with: ctest --test-dir build --output-on-failure
+# ---------------------------------------------------------------------------
+# enable_testing() must be in the top-level CMakeLists.txt so CTest finds
+# the tests from the build directory root. Each test is a plain executable;
+# exit code 0 = pass, anything else = fail. Linking laner_build_flags means
+# tests run under ASan/UBSan in Debug, catching memory bugs as well as
+# wrong answers.
+enable_testing()
+
+add_executable(test_money tests/test_money.c)
+target_link_libraries(test_money PRIVATE laner_core laner_build_flags)
+add_test(NAME money COMMAND test_money)
