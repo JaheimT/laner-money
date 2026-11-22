@@ -16,8 +16,8 @@ liabilities (good vs bad debt).
 ## M0 — Toolchain ✅
 C, CMake, SQLite, ASan/UBSan in Debug builds. Fresh start Nov 2026 (ADR-0001).
 
-## M1 — CLI + transactions (CURRENT)
-1. ADR-0002: why we build a CLI before the HTTP server.
+## M1 — HTTP server + transactions (CURRENT)
+1. ADR-0002: why we build the HTTP server before a CLI.
 2. `parse_pence` (src/core/money.c, include/money.h) + tests/test_money.c.
    I wrote this — check it, don't rewrite it.
 3. CMake: src/core + src/db as a static library; `laner` and the tests
@@ -28,20 +28,22 @@ C, CMake, SQLite, ASan/UBSan in Debug builds. Fresh start Nov 2026 (ADR-0001).
    Use PRAGMA user_version for schema versioning.
 5. Insert + list functions. Prepared statements ONLY — never build SQL
    with string formatting.
-6. CLI: `laner add <amount> <category> "<note>"` and `laner list`.
-   Validate all input (amount via parse_pence; category/note length and
-   allowed characters).
+6. Minimal HTTP server (replaces the CLI): hand-rolled over raw sockets,
+   no libraries. Single-threaded, binds to 127.0.0.1 only, GET only.
+   Routes: `GET /health`, then `GET /transactions` (read-only list).
+   Cap request size from day one. No POST yet — test data goes in via
+   tests or the `sqlite3` tool.
 7. DB tests using an in-memory database (":memory:").
 
 ## M2 — Pots
 Spending (£80/week), Emergency Fund, ISA, Sinking Funds with targets.
-Assign transactions to pots; show balance vs target. Still CLI only.
+Assign transactions to pots; show balance vs target. Still read-only
+over HTTP; writes via tests / `sqlite3` until M5.
 Schema change goes through user_version migration.
 
-## M3 — Minimal HTTP server
-Hand-rolled over raw sockets, no libraries. Single-threaded, binds to
-127.0.0.1 only, GET only, one read-only route (e.g. `/health`).
-Goal: understand sockets and the request/response cycle, not features.
+## M3 — (merged into M1 step 6)
+The minimal HTTP server moved into M1 (ADR-0002). Number kept so later
+milestone references stay stable.
 
 ## M4 — Security pass 1: HTTP hardening
 Request size limits (line, header count, header size, body), read
@@ -50,8 +52,10 @@ so it can be tested in isolation, then fuzzed (Python scripts and/or
 libFuzzer/AFL++). Document findings in docs/security-notes.md.
 
 ## M5 — JSON API
-Read and write routes for transactions and pots, reusing the same core
-validation as the CLI. Safe JSON output encoding. Still localhost only.
+Read and write routes for transactions and pots. Validate all input in
+src/core (amount via parse_pence; category/note length and allowed
+characters) so any future interface reuses the same rules. Safe JSON
+output encoding. Still localhost only.
 
 ## M6 — Accounts + balance history
 Cash accounts and manual balance snapshots over time. Completes the v1
