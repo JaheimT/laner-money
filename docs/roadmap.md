@@ -25,16 +25,19 @@ Simple but effective: decide how the whole app fits together *before*
 building lots of pages, so features slot into a plan instead of piling up.
 1. List every screen the finished Phase 1 app needs, and the main
    question each one answers ("how much can I spend this week?").
-2. Navigation: what's in the main menu (aim for 5 or fewer items), what
-   lives inside each section, what the home screen shows.
+2. Navigation: dashboard as home, left sidebar with every screen in
+   clear groups (Money, Plan), what the home screen shows.
 3. Wireframes for the key screens (dashboard, transactions, accounts,
    add-transaction) — rough layouts, no colour yet.
 4. Design system: colours (moss, ochre, bark, sand; violet for security),
    type, spacing, and the reusable pieces (buttons, forms, tables, cards,
    money formatting, empty states, error messages).
-5. Static HTML/CSS mockups of the key screens with fake data. Check on a
+5. Widget grid and theme tokens: every dashboard tile is a self-contained
+   widget in standard sizes; every colour/size is a named token, so
+   layouts and themes can be customised later (M10) without rework.
+6. Static HTML/CSS mockups of the key screens with fake data. Check on a
    phone-sized screen too.
-6. Write it up in docs/design.md so later milestones follow it.
+7. Write it up in docs/design.md so later milestones follow it.
 
 ## M2 — Foundations (localhost only)
 1. Alembic migrations — before any real data goes in.
@@ -100,7 +103,22 @@ Must be done before the app is reachable from anything but localhost.
    the API is down; note in docs/security-notes.md what the provider
    can learn.
 
-## M10 — Live with it + security pass 2
+## M10 — Customisation: layouts and themes
+Like Linux: easy, simple defaults; change everything if you want to.
+1. Dashboard edit mode: move, resize, hide and add widgets. Works with
+   plain buttons first (no JavaScript needed).
+2. Layout presets: Control room (default), Minimal, Budget focus,
+   Investor. Layout saved as data; "Reset to default" always available.
+3. Theme presets: Solarpunk (default), Night grove (dark), High contrast.
+4. Custom themes: change colours, radius, spacing, fonts. Import/export
+   as small files.
+5. Drag and drop on top of edit mode, with a small self-hosted JS
+   library (nothing loaded from outside sites).
+6. Safety rules: themes are values, never raw CSS or scripts; the
+   violet security colour can't be removed or reused; contrast warning
+   for unreadable themes.
+
+## M11 — Live with it + security pass 2
 Use it for a month or so; list and fix annoyances. Re-read every module
 against docs/security-notes.md, update dependencies, re-run `pip-audit`
 and `bandit`.
