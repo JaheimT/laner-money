@@ -32,6 +32,35 @@ resize and restyle anything (M10).
 8. **Defaults first, options second.** Good presets for everyone; full
    control for those who want it.
 
+## Period toggle (everywhere)
+
+Every screen that shows money over time has the same control, in the
+same place (top-right of the screen header):
+
+```
+Day  Week  [Month]  Year      ‹ November 2026 ›
+```
+
+- **Day / Week / Month / Year** sets the period; **‹ ›** steps one period
+  back or forward; clicking the label jumps back to "now".
+- Weeks run Monday–Sunday. Year means the calendar year; the ISA screen
+  uses the tax year (6 April – 5 April) instead, and says so.
+- Each screen remembers its own last choice (Budget defaults to Week,
+  everything else to Month).
+- Worked-out figures (e.g. a weekly budget shown as a month) are marked "≈".
+
+Where it applies:
+
+| Screen | What the period changes |
+|---|---|
+| Dashboard | One toggle for the whole dashboard: in/out/net tile, budget, recent transactions, change in net worth |
+| Transactions | Which transactions are listed, and the in/out/net totals |
+| Budget | Spent vs budget for that period |
+| Bills | Calendar view: day list, week strip, month grid, or year overview |
+| Net worth | The "change" figures and how the chart groups points; the chart also has **All** |
+| Account detail | Balance change and transactions in that period |
+| Savings goals | How much was saved towards each goal in that period |
+
 ## Screens (M1 step 1)
 
 ⭐ = top 3, most used: these get the easiest-to-reach places.
@@ -90,8 +119,9 @@ but organised:
 Default layout (wide screen). Numbers are made up:
 
 ```
+                         Day  Week  [Month]  Year   ‹ Nov 2026 ›
 ┌──────────────┬──────────────┬──────────────┬──────────────┐
-│ Net worth    │ Cash         │ Debt         │ This month   │
+│ Net worth    │ Cash         │ Debt         │ This period  │
 │ £12,480  ↑   │ £3,210       │ £2,340  ↓    │ +£410 net    │
 ├──────────────┴──────────────┼──────────────┴──────────────┤
 │ Net worth over time         │ Budget: this week           │
@@ -158,7 +188,8 @@ next to the sidebar. Numbers are made up.
 ### Transactions
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ Transactions              ‹ November 2026 ›   🔍 Search  │
+│ Transactions   Day Week [Month] Year  ‹ November 2026 ›  │
+│ 🔍 Search                                                │
 │ [All accounts ▾] [All categories ▾]                      │
 ├──────────────────────────────────────────────────────────┤
 │  In £1,940        Out £1,530        Net +£410            │
@@ -194,7 +225,7 @@ next to the sidebar. Numbers are made up.
 ### Budget
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ Budget                 [Week] Month    ‹ 17–23 Nov ›     │
+│ Budget      Day [Week] Month  Year     ‹ 17–23 Nov ›     │
 ├──────────────────────────────────────────────────────────┤
 │  £34 left of £80        4 days left    ≈ £8.50 a day     │
 │  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░                                 │
@@ -211,12 +242,17 @@ next to the sidebar. Numbers are made up.
 ```
 - Top line answers "how much can I spend?", including a per-day figure.
 - Moss = fine, ochre = nearly full, clay = over.
-- Defaults to Week (matches the £80/week Spending pot).
+- Toggle **Day / Week / Month / Year**; ‹ › steps back and forward one
+  period. Defaults to Week (matches the £80/week Spending pot); the last
+  choice is remembered.
+- Each budget has a home period (e.g. £80 a **week**). Other views scale
+  it: Day ≈ £11.43, Month = £80 × days in month ÷ 7, Year ≈ £4,171. Scaled
+  figures are marked "≈" so it's clear they're worked out, not set.
 
 ### Bills
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ Bills                         ‹ November 2026 ›  [+ Bill]│
+│ Bills  Day Week [Month] Year  ‹ November 2026 ›  [+ Bill]│
 ├──────────────────────────────┬───────────────────────────┤
 │  M   T   W   T   F   S   S   │ Before payday (Fri 28)    │
 │                          1   │   Mon 24  Phone     £18   │
@@ -234,11 +270,11 @@ next to the sidebar. Numbers are made up.
 ### Net worth
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ Net worth                                                │
-│ £12,480        +£320 this month   +£2,100 this year      │
+│ Net worth      Day Week [Month] Year  ‹ November 2026 ›  │
+│ £12,480        +£320 this month                          │
 ├──────────────────────────────────────────────────────────┤
 │  (chart: assets ──, debts ┄┄, net worth ━━)              │
-│                          [6M] 1Y  All                    │
+│                                  [This period]  All      │
 ├────────────────────────────┬─────────────────────────────┤
 │ Assets          £14,820    │ Debts            £2,340     │
 │  Cash        £3,210  ▓▓░   │  Credit card  £840   bad    │
