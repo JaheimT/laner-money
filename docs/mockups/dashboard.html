@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en-GB" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laner Money · Dashboard mockup</title>
+<!--
+  STATIC MOCKUP (M1). Fake data, no server, nothing loaded from outside.
+  Open this file directly in a browser. Colours and sizes follow
+  docs/design.md → "Design system". The real app is built in M2+.
+-->
+<style>
+/* ---------- Design tokens: Solarpunk (light) ---------- */
+:root {
+  --page: #efe6d2; --surface: #fbf7ee; --line: #e2d7bf; --line-strong: #c9b994;
+  --ink: #3b2c21; --ink-2: #6b5847; --ink-muted: #76634f;
+  --brand: #4f6b3a; --brand-ink: #fbf7ee; --brand-soft: #dfe6cf;
+  --accent: #c08a2e; --security: #6b4c9a; --security-ink: #ffffff;
+  --good: #4f7a33; --warn: #b8801f; --warn-text: #8a5c12; --bad: #8f3420;
+  --s-net: #24508a; --s-assets: #2a8a86; --s-debts: #6b4a33;
+  --grid: #e7ddc7;
+  --radius: 10px; --radius-sm: 6px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+/* ---------- Night grove (dark) ---------- */
+:root[data-theme="dark"] {
+  --page: #161813; --surface: #1f221c; --line: #2e3229; --line-strong: #444a3c;
+  --ink: #f1e9d8; --ink-2: #c9bda6; --ink-muted: #9a8f7c;
+  --brand: #7fa65a; --brand-ink: #1f221c; --brand-soft: #2c3524;
+  --accent: #d9a441; --security: #a58bd6; --security-ink: #1f221c;
+  --good: #76a650; --warn: #f0c860; --warn-text: #f0c860; --bad: #c4553a;
+  --s-net: #86aaf2; --s-assets: #2f9890; --s-debts: #d4b08a;
+  --grid: #2a2e25;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: var(--font); font-size: 16px; line-height: 1.5;
+  background: var(--page); color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+button { font: inherit; color: inherit; }
+
+/* ---------- Layout ---------- */
+.app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+.sidebar {
+  background: var(--surface); border-right: 1px solid var(--line);
+  padding: 16px 12px; display: flex; flex-direction: column; gap: 4px;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px;
+        padding: 4px 8px 12px; border-bottom: 3px solid var(--accent); margin-bottom: 12px; }
+.add-btn {
+  background: var(--brand); color: var(--brand-ink); border: 0; border-radius: var(--radius-sm);
+  padding: 8px 12px; font-weight: 600; cursor: pointer; margin-bottom: 12px; text-align: left;
+}
+.add-btn:hover { filter: brightness(1.08); }
+.nav-group { font-size: 12px; font-weight: 700; letter-spacing: .06em; color: var(--ink-muted);
+             padding: 12px 8px 4px; }
+.nav a {
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm);
+  color: var(--ink-2); text-decoration: none; font-size: 14px;
+}
+.nav a:hover { background: var(--brand-soft); color: var(--ink); }
+.nav a.active { background: var(--brand); color: var(--brand-ink); font-weight: 600; }
+.nav a .star { margin-left: auto; font-size: 12px; opacity: .7; }
+.nav a.lock { color: var(--security); font-weight: 600; }
+.nav a.lock:hover { background: color-mix(in srgb, var(--security) 14%, transparent); }
+.nav .sep { border-top: 1px solid var(--line); margin: 12px 0 4px; }
+
+main { padding: 24px 32px 48px; min-width: 0; }
+
+.topbar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+.topbar h1 { font-size: 24px; margin: 0; margin-right: auto; }
+.menu-btn { display: none; background: none; border: 1px solid var(--line-strong);
+            border-radius: var(--radius-sm); padding: 4px 10px; cursor: pointer; }
+
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); overflow: hidden; }
+.seg button { background: var(--surface); border: 0; padding: 4px 12px; font-size: 14px; cursor: pointer; color: var(--ink-2); }
+.seg button + button { border-left: 1px solid var(--line-strong); }
+.seg button[aria-pressed="true"] { background: var(--brand); color: var(--brand-ink); font-weight: 600; }
+.stepper { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; }
+.stepper button { background: none; border: 0; cursor: pointer; padding: 2px 8px; font-size: 16px; color: var(--ink-2); }
+.stepper .label { min-width: 130px; text-align: center; font-weight: 600; }
+
+/* ---------- Widget grid: 4 columns ---------- */
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.w { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+     padding: 16px; min-width: 0; }
+.w.medium { grid-column: span 2; }
+.w.wide { grid-column: span 4; }
+.w h2 { font-size: 14px; font-weight: 600; color: var(--ink-2); margin: 0 0 8px;
+        display: flex; align-items: baseline; gap: 8px; }
+.w h2 .more { margin-left: auto; font-weight: 400; font-size: 12px; color: var(--ink-muted); text-decoration: none; }
+.w h2 .more:hover { color: var(--ink); text-decoration: underline; }
+
+/* Stat tile */
+.big { font-size: 32px; font-weight: 700; line-height: 1.15; letter-spacing: -.01em; }
+.sub { font-size: 14px; color: var(--ink-2); }
+.delta { font-size: 14px; font-weight: 600; }
+.delta.up { color: var(--good); } .delta.down-good { color: var(--good); } .delta.bad { color: var(--bad); }
+.spark { display: block; width: 100%; height: 32px; margin-top: 8px; }
+.inout { display: flex; gap: 16px; font-size: 14px; color: var(--ink-2); margin-top: 4px; }
+
+/* Status chip: colour + icon + word, never colour alone */
+.status { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.status.good { color: var(--good); } .status.warn { color: var(--warn-text); } .status.bad { color: var(--bad); }
+
+/* Progress bars */
+.bar-row { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; margin: 10px 0; font-size: 14px; }
+.bar-row .amt { color: var(--ink-2); text-align: right; }
+.bar { grid-column: 1 / -1; height: 8px; background: var(--grid); border-radius: 4px; overflow: hidden; }
+.bar > span { display: block; height: 100%; border-radius: 4px; background: var(--good); }
+.bar > span.warn { background: var(--warn); } .bar > span.bad { background: var(--bad); }
+.budget-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.budget-head .big { font-size: 24px; }
+
+/* Net worth chart */
+.chart-wrap { position: relative; }
+.chart { width: 100%; height: 240px; display: block; }
+.chart .gridline { stroke: var(--grid); stroke-width: 1; }
+.chart .axis { fill: var(--ink-muted); font-size: 12px; }
+.chart .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart .line.net { stroke-width: 3; }
+.chart .endlabel { font-size: 12px; fill: var(--ink-2); }
+.chart .cross { stroke: var(--ink-muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart .dot { stroke: var(--surface); stroke-width: 2; }
+.legend { display: flex; gap: 16px; font-size: 12px; color: var(--ink-2); margin-top: 4px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.tooltip {
+  position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm); padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 12px rgb(0 0 0 / .12);
+  opacity: 0; transition: opacity .1s; white-space: nowrap; z-index: 2;
+}
+.tooltip b { display: block; margin-bottom: 4px; font-size: 13px; }
+.tooltip .row { display: flex; gap: 12px; justify-content: space-between; }
+.tooltip i { display: inline-block; width: 10px; height: 3px; margin-right: 6px; vertical-align: middle; }
+.link-btn { background: none; border: 0; padding: 0; font-size: 12px; color: var(--ink-muted); cursor: pointer; text-decoration: underline; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; color: var(--ink-muted); font-weight: 600; }
+td.num, th.num { text-align: right; }
+
+/* Bills calendar */
+.bills { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; font-size: 12px; text-align: center; }
+.cal .dow { color: var(--ink-muted); font-weight: 600; padding-bottom: 4px; }
+.cal .d { padding: 4px 0 8px; border-radius: 4px; position: relative; color: var(--ink-2); }
+.cal .d.today { outline: 2px solid var(--accent); outline-offset: -2px; font-weight: 700; color: var(--ink); }
+.cal .d.bill::after { content: ""; position: absolute; left: 50%; bottom: 2px; width: 5px; height: 5px;
+                      margin-left: -2.5px; border-radius: 50%; background: var(--ink-2); }
+.cal .d.pay { background: var(--brand-soft); font-weight: 700; color: var(--ink); }
+.cal-key { font-size: 12px; color: var(--ink-muted); margin-top: 8px; }
+.list { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.list li { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.list li .when { color: var(--ink-muted); width: 56px; flex: none; }
+.list li .amt { margin-left: auto; }
+.list li.total { font-weight: 700; border-bottom: 0; }
+.out { color: var(--bad); } .in { color: var(--good); }
+
+/* ---------- Footer note ---------- */
+.mock-note { margin-top: 24px; font-size: 12px; color: var(--ink-muted); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .w.wide { grid-column: span 2; }
+}
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: fixed; inset: 0 auto 0 0; width: 260px; z-index: 10; transform: translateX(-100%);
+             transition: transform .2s; box-shadow: 4px 0 16px rgb(0 0 0 / .2); }
+  .sidebar.open { transform: none; }
+  .menu-btn { display: inline-block; }
+  main { padding: 16px; }
+  .grid { grid-template-columns: 1fr; }
+  .w.medium, .w.wide { grid-column: auto; }
+  .bills { grid-template-columns: 1fr; }
+  .fab { display: block !important; }
+}
+.fab { display: none; position: fixed; right: 16px; bottom: 16px; width: 56px; height: 56px; border-radius: 50%;
+       border: 0; background: var(--brand); color: var(--brand-ink); font-size: 28px; cursor: pointer;
+       box-shadow: 0 4px 12px rgb(0 0 0 / .25); z-index: 5; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ======================= Sidebar ======================= -->
+  <nav class="sidebar" id="sidebar" aria-label="Main">
+    <div class="logo">🌿 Laner Money</div>
+    <button class="add-btn" type="button">+ Add transaction</button>
+    <div class="nav">
+      <a href="#" class="active">▣ Dashboard</a>
+      <a href="#">≡ Transactions</a>
+      <div class="nav-group">MONEY</div>
+      <a href="#">Accounts</a>
+      <a href="#">Debts</a>
+      <a href="#">Net worth <span class="star">★</span></a>
+      <a href="#">Holdings</a>
+      <div class="nav-group">PLAN</div>
+      <a href="#">Budget <span class="star">★</span></a>
+      <a href="#">Bills <span class="star">★</span></a>
+      <a href="#">Savings goals</a>
+      <a href="#">ISA allowance</a>
+      <div class="sep"></div>
+      <a href="#">⇪ Import</a>
+      <a href="#">⚙ Settings</a>
+      <a href="#" class="lock">🔒 Lock</a>
+    </div>
+  </nav>
+
+  <!-- ======================= Main ======================= -->
+  <main>
+    <div class="topbar">
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu">☰</button>
+      <h1>Dashboard</h1>
+      <div class="seg" id="period" role="group" aria-label="Period">
+        <button type="button" data-p="day">Day</button>
+        <button type="button" data-p="week">Week</button>
+        <button type="button" data-p="month" aria-pressed="true">Month</button>
+        <button type="button" data-p="year">Year</button>
+      </div>
+      <div class="stepper">
+        <button type="button" aria-label="Previous period">‹</button>
+        <span class="label" id="periodLabel">November 2026</span>
+        <button type="button" aria-label="Next period">›</button>
+      </div>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" data-theme="light" aria-pressed="true">Solarpunk</button>
+        <button type="button" data-theme="dark">Night grove</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Row 1: headline numbers -->
+      <section class="w">
+        <h2>Net worth</h2>
+        <div class="big">£12,480</div>
+        <div class="delta up">▲ +£320 <span class="sub" id="pWord1">this month</span></div>
+        <svg class="spark" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
+          <polyline fill="none" stroke="var(--s-net)" stroke-width="2" vector-effect="non-scaling-stroke"
+            points="0,26 9,25 18,23 27,24 36,20 45,18 54,19 63,15 72,13 81,12 90,9 100,7"/>
+        </svg>
+      </section>
+      <section class="w">
+        <h2>Cash</h2>
+        <div class="big">£3,210</div>
+        <div class="sub">3 accounts</div>
+        <svg class="spark" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
+          <polyline fill="none" stroke="var(--s-assets)" stroke-width="2" vector-effect="non-scaling-stroke"
+            points="0,20 9,12 18,16 27,22 36,14 45,10 54,17 63,21 72,13 81,9 90,15 100,12"/>
+        </svg>
+      </section>
+      <section class="w">
+        <h2>Debt</h2>
+        <div class="big">£2,340</div>
+        <div class="delta down-good">▼ −£150 <span class="sub" id="pWord2">this month</span></div>
+        <svg class="spark" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
+          <polyline fill="none" stroke="var(--s-debts)" stroke-width="2" vector-effect="non-scaling-stroke"
+            points="0,6 9,7 18,8 27,10 36,11 45,13 54,14 63,16 72,18 81,19 90,21 100,22"/>
+        </svg>
+      </section>
+      <section class="w">
+        <h2 id="periodTileTitle">This month</h2>
+        <div class="big in" id="pNet">+£410</div>
+        <div class="inout"><span>In <b id="pIn">£1,940</b></span><span>Out <b id="pOut">£1,530</b></span></div>
+        <div class="sub" style="margin-top:8px">Net = money in − money out</div>
+      </section>
+
+      <!-- Row 2: net worth chart + budget -->
+      <section class="w medium">
+        <h2>Net worth over time <a class="more" href="#">Open ›</a></h2>
+        <div class="chart-wrap" id="chartWrap">
+          <svg class="chart" id="chart" role="img" aria-label="Net worth, assets and debts over the last 12 months"></svg>
+          <div class="tooltip" id="tip"></div>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--s-net);height:4px"></i>Net worth</span>
+          <span><i style="background:var(--s-assets)"></i>Assets</span>
+          <span><i style="background:var(--s-debts)"></i>Debts</span>
+          <span style="margin-left:auto"><button class="link-btn" id="tableBtn" type="button">Show as table</button></span>
+        </div>
+        <div id="chartTable" hidden></div>
+      </section>
+
+      <section class="w medium">
+        <h2>Budget: this week <a class="more" href="#">Open ›</a></h2>
+        <div class="budget-head">
+          <span class="big">£34 left</span><span class="sub">of £80 · 4 days left · ≈ £8.50 a day</span>
+        </div>
+        <div class="bar-row" style="margin-top:4px">
+          <div class="bar"><span style="width:57.5%"></span></div>
+        </div>
+        <div class="bar-row">
+          <span>Groceries <span class="status good">✓ On track</span></span><span class="amt">£30 / £50</span>
+          <div class="bar"><span style="width:60%"></span></div>
+        </div>
+        <div class="bar-row">
+          <span>Eating out <span class="status warn">⚠ Nearly full</span></span><span class="amt">£28 / £30</span>
+          <div class="bar"><span class="warn" style="width:93%"></span></div>
+        </div>
+        <div class="bar-row">
+          <span>Fun <span class="status bad">✕ Over by £4</span></span><span class="amt">£14 / £10</span>
+          <div class="bar"><span class="bad" style="width:100%"></span></div>
+        </div>
+        <div class="bar-row">
+          <span>Transport <span class="status good">✓ On track</span></span><span class="amt">£8 / £20</span>
+          <div class="bar"><span style="width:40%"></span></div>
+        </div>
+      </section>
+
+      <!-- Row 3: bills -->
+      <section class="w wide">
+        <h2>Bills: November <a class="more" href="#">Open ›</a></h2>
+        <div class="bills">
+          <div>
+            <div class="cal" id="cal"></div>
+            <div class="cal-key">● bill · <span style="background:var(--brand-soft);padding:0 4px;border-radius:3px">28</span> payday · outlined = today</div>
+          </div>
+          <div>
+            <div class="sub" style="font-weight:600;margin-bottom:4px">Coming up before payday (Fri 28)</div>
+            <ul class="list">
+              <li><span class="when">Mon 24</span>Phone<span class="amt out">−£18.00</span></li>
+              <li><span class="when">Thu 27</span>Spotify<span class="amt out">−£11.99</span></li>
+              <li><span class="when">Fri 28</span>💷 Payday<span class="amt in">+£1,900.00</span></li>
+              <li class="total"><span class="when"></span>Due before payday<span class="amt">£29.99</span></li>
+            </ul>
+            <div class="sub" style="margin-top:8px">This month: £742 in bills · <span class="status good">✓ £694 paid</span> · £48 to go</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Row 4: small widgets -->
+      <section class="w">
+        <h2>Savings goals <a class="more" href="#">›</a></h2>
+        <div class="bar-row"><span>Holiday</span><span class="amt">62%</span>
+          <div class="bar"><span style="width:62%;background:var(--s-assets)"></span></div></div>
+        <div class="sub">£930 of £1,500 · by Jun 2027</div>
+        <div class="bar-row"><span>Car</span><span class="amt">18%</span>
+          <div class="bar"><span style="width:18%;background:var(--s-assets)"></span></div></div>
+        <div class="sub">£540 of £3,000 · by Dec 2027</div>
+      </section>
+      <section class="w">
+        <h2>ISA allowance <a class="more" href="#">›</a></h2>
+        <div class="big" style="font-size:24px">£6,500</div>
+        <div class="sub">used of £20,000 (example)</div>
+        <div class="bar" style="margin:8px 0"><span style="width:32.5%;background:var(--s-net)"></span></div>
+        <div class="sub">Tax year ends 5 Apr · 133 days left</div>
+      </section>
+      <section class="w">
+        <h2>Debts <a class="more" href="#">›</a></h2>
+        <ul class="list">
+          <li>Credit card<span class="amt">£840</span></li>
+          <li style="border:0;padding-top:0"><span class="sub">22.9% APR · off by Mar 2027 · <span class="status bad">✕ bad debt</span></span></li>
+          <li>Student loan<span class="amt">£1,500</span></li>
+          <li style="border:0;padding-top:0"><span class="sub">income-linked · <span class="status good">✓ good debt</span></span></li>
+        </ul>
+      </section>
+      <section class="w">
+        <h2>Recent <a class="more" href="#">See all ›</a></h2>
+        <ul class="list">
+          <li>🛒 Tesco<span class="amt out">−£23.10</span></li>
+          <li>☕ Flat white<span class="amt out">−£3.60</span></li>
+          <li>💷 Salary<span class="amt in">+£1,900.00</span></li>
+          <li>📺 Netflix<span class="amt out">−£10.99</span></li>
+        </ul>
+      </section>
+    </div>
+
+    <p class="mock-note">Static mockup · fake data · nothing is saved. See docs/design.md.</p>
+  </main>
+</div>
+<button class="fab" type="button" aria-label="Add transaction">+</button>
+
+<script>
+/* ---------- Theme switch ---------- */
+document.querySelectorAll('[data-theme]').forEach(b => {
+  if (b.tagName !== 'BUTTON') return;
+  b.addEventListener('click', () => {
+    document.documentElement.dataset.theme = b.dataset.theme;
+    b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  });
+});
+
+/* ---------- Phone menu ---------- */
+const sidebar = document.getElementById('sidebar');
+document.getElementById('menuBtn').addEventListener('click', () => sidebar.classList.toggle('open'));
+
+/* ---------- Money formatting: £1,234.56, real minus sign ---------- */
+const fmt = (n, sign = false) => {
+  const s = '£' + Math.abs(n).toLocaleString('en-GB', { maximumFractionDigits: 0 });
+  if (!sign) return (n < 0 ? '−' : '') + s;
+  return (n < 0 ? '−' : '+') + s;
+};
+
+/* ---------- Period toggle (fake numbers per period) ---------- */
+const periods = {
+  day:   { label: 'Sun 22 Nov 2026', word: 'today',      title: 'Today',      inn: 0,     out: 34 },
+  week:  { label: '16–22 Nov 2026',  word: 'this week',  title: 'This week',  inn: 0,     out: 86 },
+  month: { label: 'November 2026',   word: 'this month', title: 'This month', inn: 1940,  out: 1530 },
+  year:  { label: '2026',            word: 'this year',  title: 'This year',  inn: 21340, out: 18920 },
+};
+document.querySelectorAll('#period button').forEach(b => b.addEventListener('click', () => {
+  const p = periods[b.dataset.p];
+  document.querySelectorAll('#period button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  document.getElementById('periodLabel').textContent = p.label;
+  document.getElementById('periodTileTitle').textContent = p.title;
+  document.getElementById('pWord1').textContent = p.word;
+  document.getElementById('pWord2').textContent = p.word;
+  document.getElementById('pIn').textContent = fmt(p.inn);
+  document.getElementById('pOut').textContent = fmt(p.out);
+  const net = p.inn - p.out, el = document.getElementById('pNet');
+  el.textContent = fmt(net, true);
+  el.className = 'big ' + (net < 0 ? 'out' : 'in');
+}));
+
+/* ---------- Bills mini calendar (November 2026 starts on a Sunday) ---------- */
+const cal = document.getElementById('cal');
+['M','T','W','T','F','S','S'].forEach(d => cal.insertAdjacentHTML('beforeend', `<div class="dow">${d}</div>`));
+for (let i = 0; i < 6; i++) cal.insertAdjacentHTML('beforeend', '<div></div>');
+const bills = [1, 4, 12, 15, 24, 27], payday = 28, today = 22;
+for (let d = 1; d <= 30; d++) {
+  const cls = ['d', bills.includes(d) && 'bill', d === payday && 'pay', d === today && 'today'].filter(Boolean).join(' ');
+  cal.insertAdjacentHTML('beforeend', `<div class="${cls}">${d}</div>`);
+}
+
+/* ---------- Net worth chart: one axis, 3 series, hover crosshair ---------- */
+const months = ['Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov'];
+const assets = [11200,11450,11900,11800,12300,12650,12600,13200,13600,13900,14400,14820];
+const debts  = [ 3420, 3330, 3250, 3180, 3090, 3000, 2910, 2820, 2700, 2590, 2490, 2340];
+const net    = assets.map((a, i) => a - debts[i]);
+const series = [
+  { name: 'Net worth', data: net,    color: 'var(--s-net)',    cls: 'net' },
+  { name: 'Assets',    data: assets, color: 'var(--s-assets)', cls: '' },
+  { name: 'Debts',     data: debts,  color: 'var(--s-debts)',  cls: '' },
+];
+const svg = document.getElementById('chart'), wrap = document.getElementById('chartWrap'), tip = document.getElementById('tip');
+function drawChart() {
+  const W = wrap.clientWidth, H = 240, L = 48, R = 72, T = 12, B = 24;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const max = 16000, x = i => L + i * (W - L - R) / (months.length - 1), y = v => T + (1 - v / max) * (H - T - B);
+  let s = '';
+  for (let v = 0; v <= max; v += 4000)
+    s += `<line class="gridline" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>` +
+         `<text class="axis" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v ? '£' + v / 1000 + 'k' : '£0'}</text>`;
+  months.forEach((m, i) => { if (i % 2 === 1) s += `<text class="axis" x="${x(i)}" y="${H - 6}" text-anchor="middle">${m}</text>`; });
+  series.forEach(se => {
+    s += `<polyline class="line ${se.cls}" stroke="${se.color}" points="${se.data.map((v, i) => x(i) + ',' + y(v)).join(' ')}"/>`;
+    const last = se.data.length - 1;
+    s += `<text class="endlabel" x="${x(last) + 8}" y="${y(se.data[last]) + 4}">${se.name}</text>`;
+  });
+  s += `<line class="cross" id="cross" y1="${T}" y2="${H - B}" visibility="hidden"/>`;
+  series.forEach((se, k) => s += `<circle class="dot" id="dot${k}" r="5" fill="${se.color}" visibility="hidden"/>`);
+  s += `<rect x="${L}" y="0" width="${W - L - R}" height="${H}" fill="transparent" id="hit"/>`;
+  svg.innerHTML = s;
+
+  const hit = svg.querySelector('#hit'), cross = svg.querySelector('#cross');
+  const show = ev => {
+    const px = ev.clientX - svg.getBoundingClientRect().left;
+    const i = Math.max(0, Math.min(months.length - 1, Math.round((px - L) / ((W - L - R) / (months.length - 1)))));
+    cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('visibility', 'visible');
+    series.forEach((se, k) => { const d = svg.querySelector('#dot' + k);
+      d.setAttribute('cx', x(i)); d.setAttribute('cy', y(se.data[i])); d.setAttribute('visibility', 'visible'); });
+    tip.innerHTML = `<b>${months[i]} ${i === 0 ? 2025 : 2026}</b>` + series.map(se =>
+      `<div class="row"><span><i style="background:${se.color}"></i>${se.name}</span><span>${fmt(se.data[i])}</span></div>`).join('');
+    const tx = x(i) + 12 + 160 > W ? x(i) - 172 : x(i) + 12;
+    tip.style.left = tx + 'px'; tip.style.top = '8px'; tip.style.opacity = 1;
+  };
+  hit.addEventListener('mousemove', show);
+  hit.addEventListener('mouseleave', () => {
+    tip.style.opacity = 0; cross.setAttribute('visibility', 'hidden');
+    series.forEach((_, k) => svg.querySelector('#dot' + k).setAttribute('visibility', 'hidden'));
+  });
+}
+drawChart();
+addEventListener('resize', drawChart);
+
+/* ---------- "Show as table" ---------- */
+const tbl = document.getElementById('chartTable'), tblBtn = document.getElementById('tableBtn');
+tbl.innerHTML = '<table><thead><tr><th>Month</th>' + series.map(s => `<th class="num">${s.name}</th>`).join('') +
+  '</tr></thead><tbody>' + months.map((m, i) => `<tr><td>${m}</td>` +
+  series.map(s => `<td class="num">${fmt(s.data[i])}</td>`).join('') + '</tr>').join('') + '</tbody></table>';
+tblBtn.addEventListener('click', () => {
+  const showing = !tbl.hidden;
+  tbl.hidden = showing; wrap.hidden = !showing;
+  tblBtn.textContent = showing ? 'Show as table' : 'Show as chart';
+  if (showing) drawChart();
+});
+</script>
+</body>
+</html>
