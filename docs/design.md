@@ -310,6 +310,98 @@ next to the sidebar. Numbers are made up.
 - Sorting order: my rules → learnt from past choices → starter UK rules →
   Uncategorised. All on my server; never sent to outside services.
 
+## Design system (M1 step 4)
+
+All colours were checked with a script, not by eye: text contrast
+(WCAG), and separation under the three common colour-vision deficiencies
+(protan, deutan, tritan; Machado simulation, OKLab ΔE ×100). Chart lines
+pass ΔE ≥ 8 colour-blind and ≥ 15 normal vision, all pairs, both themes.
+
+### Colours: Solarpunk (light, default)
+
+| Token | Hex | Used for | Contrast |
+|---|---|---|---|
+| `--page` | `#efe6d2` | page background (sand) | |
+| `--surface` | `#fbf7ee` | cards, widgets, sidebar | |
+| `--ink` | `#3b2c21` | main text, numbers (dark bark) | 10.8 : 1 on page |
+| `--ink-2` | `#6b5847` | secondary text | 5.4 : 1 on page |
+| `--ink-muted` | `#76634f` | labels, axis text | 4.6 : 1 on page |
+| `--brand` | `#4f6b3a` | buttons, current sidebar item (moss) | button text 5.6 : 1 |
+| `--accent` | `#c08a2e` | header stripe, focus outline (ochre) | |
+| `--security` | `#6b4c9a` | **only** lock, login, sessions (violet) | white text 6.7 : 1 |
+
+### Colours: Night grove (dark)
+
+Chosen for the dark surface, not an automatic flip.
+
+| Token | Hex | Contrast |
+|---|---|---|
+| `--page` | `#161813` | |
+| `--surface` | `#1f221c` | |
+| `--ink` | `#f1e9d8` | 14.8 : 1 |
+| `--ink-2` | `#c9bda6` | 8.7 : 1 |
+| `--ink-muted` | `#9a8f7c` | 5.1 : 1 |
+| `--brand` | `#7fa65a` | dark button text 5.8 : 1 |
+| `--security` | `#a58bd6` | 5.6 : 1 |
+
+### Status colours (reserved)
+
+| Meaning | Light | Dark | Always shown with |
+|---|---|---|---|
+| Good / on track | `#4f7a33` | `#76a650` | ✓ + word ("On track") |
+| Watch this | `#b8801f` (marks), `#8a5c12` (text) | `#f0c860` | ⚠ + word ("Nearly full") |
+| Problem | `#8f3420` | `#c4553a` | ✕ + word ("Over by £4") |
+
+- A status colour **never appears alone**: always icon + word. Green vs
+  red-brown is the classic colour-blind confusion; lightness is tuned
+  apart, but the icon and word are what make it safe.
+- Status colours are never used for chart lines or series.
+
+### Chart colours
+
+| Series | Light | Dark |
+|---|---|---|
+| Net worth (main line, thicker) | `#24508a` | `#86aaf2` |
+| Assets | `#2a8a86` | `#2f9890` |
+| Debts | `#6b4a33` | `#d4b08a` |
+
+- Debts are bark, not red: red means "problem", and not all debt is bad.
+- Lines 2px (main line thicker); legend plus labels at line ends; hover
+  crosshair with exact values; text in ink colours, never series colours.
+- Never two y-axes. Every chart has a "show as table" option.
+- More than three series: fold into "Other" or split into small charts;
+  any new series colour must pass the same checks.
+
+### Text
+
+- System font stack (`system-ui, -apple-system, "Segoe UI", Roboto,
+  sans-serif`): fast, native everywhere, nothing loaded from outside.
+- Sizes: 12 / 14 / 16 (body) / 20 / 24 / 32, plus 40 for widget headline
+  numbers.
+- Tabular figures for all amounts, so columns line up.
+
+### Spacing and shape
+
+- Spacing steps: 4, 8, 12, 16, 24, 32, 48. Nothing in between.
+- Corner radius: 6px controls, 10px cards (theme tokens).
+- Widget grid: 4 columns. Sizes: small 1×1, medium 2×1, wide 4×1,
+  tall 2×2. One column on phones.
+
+### Money formatting
+
+- `£1,234.56`; money out `−£23.10` with a real minus sign (U+2212).
+- In/out never by colour alone: sign first, then moss/clay text.
+- Dashboard tiles may round (`£12.5k`); exact amount on hover.
+- Worked-out amounts are prefixed `≈`.
+
+### Components
+
+Buttons (primary, secondary, danger) · inputs and dropdowns · cards /
+widgets · side panel · tables · progress bars · stat tiles (number,
+label, change) · sparklines · charts · sidebar · period toggle · empty
+states ("No bills yet. Add your first") · error messages · lock screen
+(violet).
+
 ## Customisation (built in M10, designed for now)
 
 **Layout: like an iPhone home screen**
@@ -338,6 +430,5 @@ next to the sidebar. Numbers are made up.
 
 ## Still to do in M1
 
-- Step 4: full design system (type, spacing, components).
 - Step 5: widget sizes and the token list in detail.
 - Step 6: static mockups with fake data.
