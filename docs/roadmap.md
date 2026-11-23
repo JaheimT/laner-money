@@ -92,7 +92,14 @@ Must be done before the app is reachable from anything but localhost.
 1. Recurring transactions: rent, subscriptions, salary.
 2. Bill calendar: month view of upcoming bills and paydays; what's due
    before next payday.
-3. CSV import from my bank, with duplicate detection.
+3. CSV import from my bank: an import review screen before anything is
+   saved, with duplicate detection.
+4. Auto-categorisation, so I don't pick categories by hand: my own rules
+   first, then learning from past choices (same merchant → same category),
+   then editable starter rules for common UK merchants. "Always put X in Y"
+   when I pick one; suggestions when adding by hand too; a Rules page in
+   Settings. All matching happens on my server: statements are never sent
+   to AI or other outside services.
 
 ## M9 — Investment holdings with live prices
 1. Holdings per investment account: ticker/fund, units, cost.

@@ -150,6 +150,130 @@ grouped. Always visible on wide screens.
 - Holdings appears once M9 exists; screens that don't exist yet aren't
   shown.
 
+## Key screens (M1 step 3)
+
+Rough layouts: structure only, no colour. Each sits in the main area
+next to the sidebar. Numbers are made up.
+
+### Transactions
+```
+┌──────────────────────────────────────────────────────────┐
+│ Transactions              ‹ November 2026 ›   🔍 Search  │
+│ [All accounts ▾] [All categories ▾]                      │
+├──────────────────────────────────────────────────────────┤
+│  In £1,940        Out £1,530        Net +£410            │
+├──────────────────────────────────────────────────────────┤
+│ Sat 22 Nov                                       −£34.20 │
+│   🛒 Groceries   Tesco            Current       −£23.10  │
+│   ☕ Eating out  Flat white       Credit card    −£3.60  │
+│   ⇄ Transfer     → Emergency Fund               £7.50    │
+│ Fri 21 Nov                                     +£1,900   │
+│   💷 Salary      Acme Ltd         Current    +£1,900.00  │
+└──────────────────────────────────────────────────────────┘
+```
+- Grouped by day with day totals; transfers shown neutral (⇄), not as
+  spending.
+- Clicking a row opens the edit panel on the right; the list stays put.
+
+### Add transaction (side panel)
+```
+┌──────────────────────────────┐
+│ Add               ✕          │
+│ [Expense] Income  Transfer   │
+│        £ 12.50               │   ← big, cursor starts here
+│ Category  [Groceries    ▾]   │   ← suggested from payee / recent
+│ Account   [Current      ▾]   │   ← remembers last used
+│ Date      [Today        ▾]   │
+│ + More (note, pot)           │   ← hidden until needed
+│ [ Save ]  [ Save & add another ] │
+└──────────────────────────────┘
+```
+- Transfer swaps Category for **From → To** account.
+- Opens as a side panel (current default; full page on phones).
+
+### Budget
+```
+┌──────────────────────────────────────────────────────────┐
+│ Budget                 [Week] Month    ‹ 17–23 Nov ›     │
+├──────────────────────────────────────────────────────────┤
+│  £34 left of £80        4 days left    ≈ £8.50 a day     │
+│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░                                 │
+├──────────────────────────────────────────────────────────┤
+│ Groceries     £30 / £50   ▓▓▓▓▓▓░░░░   £20 left          │
+│ Eating out    £28 / £30   ▓▓▓▓▓▓▓▓▓░   £2 left   (ochre) │
+│ Transport      £8 / £20   ▓▓▓░░░░░░░   £12 left          │
+├──────────────────────────────────────────────────────────┤
+│ Pots                                                     │
+│ Emergency Fund   £1,200 / £3,000   ▓▓▓▓░░░░░   40%       │
+│ Christmas          £90 / £200      ▓▓▓▓▓░░░░   45%       │
+│                                       [ Edit budget ]    │
+└──────────────────────────────────────────────────────────┘
+```
+- Top line answers "how much can I spend?", including a per-day figure.
+- Moss = fine, ochre = nearly full, clay = over.
+- Defaults to Week (matches the £80/week Spending pot).
+
+### Bills
+```
+┌──────────────────────────────────────────────────────────┐
+│ Bills                         ‹ November 2026 ›  [+ Bill]│
+├──────────────────────────────┬───────────────────────────┤
+│  M   T   W   T   F   S   S   │ Before payday (Fri 28)    │
+│                          1   │   Mon 24  Phone     £18   │
+│  2   3   4●  5   6   7   8   │   Thu 27  Spotify   £12   │
+│  9  10  11  12● 13  14  15   │   Total due         £30   │
+│ 16  17  18  19  20  21  22   │                           │
+│ 23 [24●]25  26 [27●]28💷 29  │ This month                │
+│ 30                           │   Bills    £742           │
+│                              │   ✓ Paid   £694           │
+│  ● bill   💷 payday          │   Due      £48            │
+└──────────────────────────────┴───────────────────────────┘
+```
+- Click a day for its bills. Each bill: ✓ paid, due, or overdue (clay).
+
+### Net worth
+```
+┌──────────────────────────────────────────────────────────┐
+│ Net worth                                                │
+│ £12,480        +£320 this month   +£2,100 this year      │
+├──────────────────────────────────────────────────────────┤
+│  (chart: assets ──, debts ┄┄, net worth ━━)              │
+│                          [6M] 1Y  All                    │
+├────────────────────────────┬─────────────────────────────┤
+│ Assets          £14,820    │ Debts            £2,340     │
+│  Cash        £3,210  ▓▓░   │  Credit card  £840   bad    │
+│  Investments £6,400  ▓▓▓▓  │  Student loan £1,500 good   │
+│  Pension     £5,210  ▓▓▓   │                             │
+├────────────────────────────┴─────────────────────────────┤
+│ Last updated: Pension 3 weeks ago    [ Update balances ] │
+└──────────────────────────────────────────────────────────┘
+```
+- The bottom line nudges me to update hand-entered balances so net worth
+  stays accurate.
+
+### Import review (M8)
+```
+┌──────────────────────────────────────────────────────────────┐
+│ Import: statement-nov.csv → Current account                  │
+│ 48 transactions · 41 sorted · 5 to check · 2 duplicates      │
+├──────────────────────────────────────────────────────────────┤
+│ To check (5)                                                 │
+│  21 Nov  BRIGHTSIDE CAFE      −£4.20   [Choose ▾]            │
+│  19 Nov  AMZN MKTP UK         −£17.99  [Choose ▾]            │
+│ Sorted (41)                                      show all ▾  │
+│  22 Nov  TESCO STORES 2041    −£23.10  Groceries   (rule)    │
+│  20 Nov  SPOTIFY P1C9         −£11.99  Subscriptions (learnt)│
+│ Duplicates, skipped (2)                          show ▾      │
+├──────────────────────────────────────────────────────────────┤
+│                       [ Cancel ]  [ Import 46 transactions ] │
+└──────────────────────────────────────────────────────────────┘
+```
+- Nothing is saved until I press Import.
+- Picking a category offers **☑ Always put "BRIGHTSIDE CAFE" in Eating
+  out**, which creates a rule.
+- Sorting order: my rules → learnt from past choices → starter UK rules →
+  Uncategorised. All on my server; never sent to outside services.
+
 ## Customisation (built in M10, designed for now)
 
 **Layout: like an iPhone home screen**
@@ -178,7 +302,6 @@ grouped. Always visible on wide screens.
 
 ## Still to do in M1
 
-- Step 3: wireframes of the key screens.
 - Step 4: full design system (type, spacing, components).
 - Step 5: widget sizes and the token list in detail.
 - Step 6: static mockups with fake data.
