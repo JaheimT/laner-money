@@ -1,0 +1,113 @@
+{% extends "app.html" %}
+{% block title %}Edit budget{% endblock %}
+
+{% macro period_select(name, selected) -%}
+<select name="{{ name }}">
+  <option value="week" {% if selected != "month" %}selected{% endif %}>a week</option>
+  <option value="month" {% if selected == "month" %}selected{% endif %}>a month</option>
+</select>
+{%- endmacro %}
+
+{% block content %}
+<div class="topbar">
+  <h1>Edit budget</h1>
+  <a class="btn secondary" href="/budget">Done</a>
+</div>
+
+<div class="stack">
+  {# ---------- Overall spending budget ---------- #}
+  <section class="w" id="spending">
+    <h2>Spending budget</h2>
+    <p class="sub">How much you want to spend on everyday things. Categories you
+       switch off below (like Rent) don't count toward it.</p>
+    <form method="post" action="/budget/spending" class="inline-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label>Amount (£)
+        <input name="amount" inputmode="decimal" maxlength="10" placeholder="0.00" autocomplete="off"
+               value="{{ form.spending_amount or ('%.2f' | format(spending.amount_pence / 100) if spending else '') }}">
+      </label>
+      <label>Every
+        {{ period_select("period", form.spending_period or (spending.period if spending else "week")) }}
+      </label>
+      <button type="submit" class="btn primary">{{ "Save" if spending else "Set budget" }}</button>
+    </form>
+    {% if errors.spending_amount %}<p class="field-error">{{ errors.spending_amount }}</p>{% endif %}
+    {% if errors.spending_period %}<p class="field-error">{{ errors.spending_period }}</p>{% endif %}
+    {% if spending %}
+    <form method="post" action="/budget/spending/delete" class="remove-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit" class="link-btn">Remove spending budget</button>
+    </form>
+    {% endif %}
+  </section>
+
+  {# ---------- Category limits ---------- #}
+  <section class="w" id="limits">
+    <h2>Category limits</h2>
+    {% for s in limits %}
+    <div class="limit-row">
+      <span class="limit-name">{{ s.name }}</span>
+      <form method="post" action="/budget/limits" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="category" value="{{ s.name }}">
+        <input name="amount" inputmode="decimal" maxlength="10" aria-label="Amount for {{ s.name }}"
+               value="{{ '%.2f' | format(s.amount_pence / 100) }}" autocomplete="off">
+        {{ period_select("period", s.period) }}
+        <button type="submit" class="btn secondary">Save</button>
+      </form>
+      <form method="post" action="/budget/limits/{{ s.id }}/delete">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="link-btn" aria-label="Remove limit for {{ s.name }}">Remove</button>
+      </form>
+    </div>
+    {% else %}
+      <p class="empty">No limits yet.</p>
+    {% endfor %}
+
+    <h3>Add a limit</h3>
+    <form method="post" action="/budget/limits" class="inline-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label>Category
+        <input name="category" list="categories" maxlength="{{ category_max }}" placeholder="Eating out"
+               value="{{ form.limit_category or '' }}" autocomplete="off">
+      </label>
+      <datalist id="categories">{% for c in categories %}<option value="{{ c }}">{% endfor %}</datalist>
+      <label>Amount (£)
+        <input name="amount" inputmode="decimal" maxlength="10" placeholder="0.00"
+               value="{{ form.limit_amount or '' }}" autocomplete="off">
+      </label>
+      <label>Every {{ period_select("period", form.limit_period or "week") }}</label>
+      <button type="submit" class="btn primary">Add</button>
+    </form>
+    {% for field in ["limit_category", "limit_amount", "limit_period"] %}
+      {% if errors[field] %}<p class="field-error">{{ errors[field] }}</p>{% endif %}
+    {% endfor %}
+    <p class="sub">Adding a category that already has a limit changes its amount.</p>
+  </section>
+
+  {# ---------- What counts toward the spending budget ---------- #}
+  <section class="w" id="counts">
+    <h2>What counts toward the spending budget</h2>
+    {% if categories %}
+    <p class="sub">Switch off things that aren't everyday spending, like Rent or Bills.</p>
+    <ul class="counts">
+      {% for c in categories %}
+      {% set on = c not in excluded %}
+      <li>
+        <span>{{ c }}</span>
+        <span class="status {{ 'good' if on else 'off' }}">{{ "✓ Counts" if on else "– Doesn't count" }}</span>
+        <form method="post" action="/budget/counts">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="category" value="{{ c }}">
+          <input type="hidden" name="counts" value="{{ '0' if on else '1' }}">
+          <button type="submit" class="btn secondary small">{{ "Switch off" if on else "Switch on" }}</button>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+      <p class="empty">Your categories will appear here once you've added some transactions.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

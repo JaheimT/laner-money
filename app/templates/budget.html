@@ -1,0 +1,38 @@
+{% extends "app.html" %}
+{% import "_budget.html" as b %}
+{% block title %}Budget{% endblock %}
+{% block content %}
+<div class="topbar">
+  <h1>Budget</h1>
+  <a class="btn secondary" href="/budget/edit">Edit budget</a>
+</div>
+
+{% if budget.is_empty %}
+<section class="w form-card">
+  <h2>No budget yet</h2>
+  <p>Choose how much you want to spend each week or month, and set limits for
+     categories like Eating out. You pick the amounts and can change them any time.</p>
+  <a class="btn primary" href="/budget/edit">Set your budget</a>
+</section>
+{% else %}
+<div class="stack">
+  <section class="w">
+    <h2>Spending</h2>
+    {% if budget.spending %}
+      {{ b.headline(budget.spending) }}
+    {% else %}
+      <p class="empty">No overall spending budget. <a href="/budget/edit#spending">Set one</a></p>
+    {% endif %}
+  </section>
+
+  <section class="w">
+    <h2>Categories</h2>
+    {% for s in budget.categories %}
+      {{ b.row(s) }}
+    {% else %}
+      <p class="empty">No category limits. <a href="/budget/edit#limits">Add one</a></p>
+    {% endfor %}
+  </section>
+</div>
+{% endif %}
+{% endblock %}

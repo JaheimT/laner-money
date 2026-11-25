@@ -28,7 +28,7 @@ def test_add_and_see_on_dashboard(client):
     for tile in ["Net worth", "Cash", "Debt", "Budget: this week", "Bills:", "Savings goals",
                  "ISA allowance", "Debts", "Recent"]:
         assert f"<h2>{tile}" in page, tile
-    assert page.count("Coming soon") == 9
+    assert page.count("Coming soon") == 8   # Budget is real now
 
 
 def test_save_and_add_another(client):

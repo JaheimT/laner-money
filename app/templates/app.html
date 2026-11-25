@@ -9,6 +9,8 @@
     <div class="nav">
       <a href="/" {% if page == "dashboard" %}class="active" aria-current="page"{% endif %}>▣ Dashboard</a>
       <a href="/transactions" {% if page == "transactions" %}class="active" aria-current="page"{% endif %}>≡ Transactions</a>
+      <div class="nav-group">PLAN</div>
+      <a href="/budget" {% if page == "budget" %}class="active" aria-current="page"{% endif %}>Budget</a>
       <div class="sep"></div>
       <form method="post" action="/logout">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">

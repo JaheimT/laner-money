@@ -9,7 +9,7 @@
   --ink: #3b2c21; --ink-2: #6b5847; --ink-muted: #76634f;
   --brand: #4f6b3a; --brand-ink: #fbf7ee; --brand-soft: #dfe6cf;
   --accent: #c08a2e; --security: #6b4c9a; --security-ink: #ffffff;
-  --good: #4f7a33; --warn-text: #8a5c12; --bad: #8f3420; --bad-soft: #f3ddd4;
+  --good: #4f7a33; --warn: #b8801f; --warn-text: #8a5c12; --bad: #8f3420; --bad-soft: #f3ddd4;
   --bar: #2a8a86; --grid: #e7ddc7; --input: #ffffff;
   --radius: 10px; --radius-sm: 6px;
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px;
@@ -23,7 +23,7 @@
     --ink: #f1e9d8; --ink-2: #c9bda6; --ink-muted: #9a8f7c;
     --brand: #7fa65a; --brand-ink: #1f221c; --brand-soft: #2c3524;
     --accent: #d9a441; --security: #a58bd6; --security-ink: #1f221c;
-    --good: #76a650; --warn-text: #f0c860; --bad: #c4553a; --bad-soft: #3a231c;
+    --good: #76a650; --warn: #f0c860; --warn-text: #f0c860; --bad: #c4553a; --bad-soft: #3a231c;
     --bar: #2f9890; --grid: #2a2e25; --input: #161813;
   }
 }
@@ -193,6 +193,34 @@ input:not([type=radio]), select {
 .list .what { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .list .amt { margin-left: auto; white-space: nowrap; }
 
+/* ---------- Budget ---------- */
+/* Status: colour + icon + word, never colour alone. */
+.status { font-size: 12px; font-weight: 600; white-space: nowrap; margin-left: var(--s1); }
+.status.good { color: var(--good); } .status.warn { color: var(--warn-text); }
+.status.bad { color: var(--bad); } .status.off { color: var(--ink-muted); }
+.bar-good { fill: var(--good); } .bar-warn { fill: var(--warn); } .bar-bad { fill: var(--bad); }
+.bar.bar-big { height: 12px; margin: var(--s1) 0 var(--s2); }
+.bar-row .per { color: var(--ink-muted); font-size: 12px; }
+.stack { display: flex; flex-direction: column; gap: var(--s4); max-width: 720px; }
+.w h3 { font-size: 14px; margin: var(--s5) 0 var(--s2); color: var(--ink-2); }
+.inline-form { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s3); align-items: end; }
+.inline-form label { display: flex; flex-direction: column; gap: var(--s1); font-size: 14px; font-weight: 600; }
+.inline-form input:not([type=hidden]) { width: 130px; }
+.inline-form select { width: auto; }
+.limit-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3);
+             padding: var(--s2) 0; border-bottom: 1px solid var(--line); }
+.limit-name { min-width: 140px; font-weight: 600; }
+.remove-form { margin-top: var(--s2); }
+.link-btn { background: none; border: 0; padding: 0; font-size: 14px; color: var(--ink-muted);
+            text-decoration: underline; cursor: pointer; }
+.link-btn:hover { color: var(--bad); }
+.btn.small { padding: 2px var(--s3); font-size: 14px; }
+.counts { list-style: none; margin: 0; padding: 0; }
+.counts li { display: flex; align-items: center; gap: var(--s3); padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.counts li span:first-child { flex: 1; }
+.nav-group { font-size: 12px; font-weight: 700; letter-spacing: .06em; color: var(--ink-muted);
+             padding: var(--s3) var(--s2) var(--s1); }
+
 /* ---------- Floating add button (phones) ---------- */
 .fab { display: none; position: fixed; right: var(--s4); bottom: var(--s4); width: 56px; height: 56px;
        border-radius: 50%; background: var(--brand); color: var(--brand-ink); font-size: 32px; line-height: 56px;
@@ -205,13 +233,17 @@ input:not([type=radio]), select {
 }
 /* Phones: the sidebar becomes a top bar (no JavaScript needed), widgets stack. */
 @media (max-width: 760px) {
-  .app { grid-template-columns: 1fr; }
+  .app { grid-template-columns: 1fr; align-content: start; }
   .sidebar { position: static; height: auto; flex-direction: row; align-items: center; flex-wrap: wrap;
              border-right: 0; border-bottom: 3px solid var(--accent); padding: var(--s2) var(--s3); }
   .logo { border: 0; margin: 0; padding: 0 var(--s2) 0 0; font-size: 16px; }
-  .add-btn, .nav .sep { display: none; }
-  .nav { flex-direction: row; margin-left: auto; }
-  .nav a, .nav button { width: auto; }
+  .add-btn, .nav .sep, .nav-group { display: none; }
+  /* Logo and Lock share the first row; page links get the row below. */
+  .nav { display: contents; }
+  .nav a, .nav button { width: auto; white-space: nowrap; }
+  .nav form { order: 1; margin-left: auto; }
+  .nav a { order: 2; }
+  .sidebar::after { content: ""; order: 1; flex-basis: 100%; }
   main { padding: var(--s4) var(--s4) 96px; }
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s3); }
   .w { padding: var(--s3); }

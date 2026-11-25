@@ -34,6 +34,37 @@ class Transaction(Base):
     date: Mapped[datetime.date] = mapped_column(Date, nullable=False, index=True)
 
 
+PERIODS = ("week", "month")   # a budget's home period; weeks run Monday-Sunday
+
+
+class SpendingBudget(Base):
+    """The overall budget for day-to-day spending. At most one row (id=1);
+    no row means none is set. The amount is whatever the user chooses."""
+    __tablename__ = "spending_budget"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    amount_pence: Mapped[int] = mapped_column(Integer, nullable=False)
+    period: Mapped[str] = mapped_column(String(5), nullable=False)
+
+
+class CategoryBudget(Base):
+    """A limit for one category, e.g. Eating out £30 a week."""
+    __tablename__ = "category_budgets"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    category: Mapped[str] = mapped_column(String(CATEGORY_MAX), nullable=False, unique=True)
+    amount_pence: Mapped[int] = mapped_column(Integer, nullable=False)
+    period: Mapped[str] = mapped_column(String(5), nullable=False)
+
+
+class ExcludedCategory(Base):
+    """A category that does NOT count toward the overall spending budget
+    (e.g. Rent). Every category counts unless it's listed here."""
+    __tablename__ = "excluded_categories"
+
+    category: Mapped[str] = mapped_column(String(CATEGORY_MAX), primary_key=True)
+
+
 class User(Base):
     """The single user. Only ever one row (id=1); holds the password hash."""
     __tablename__ = "users"

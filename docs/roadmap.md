@@ -55,6 +55,11 @@ from anywhere on my tailnet. Done in order:
 7. Dashboard laid out like the M1 control-room mockup. Tiles whose
    feature isn't built yet show an empty state saying what turns them on
    (never fake numbers).
+8. Budget (first part of M6.1): an overall spending budget and category
+   limits, each with an amount and week/month the user sets themselves
+   (nothing built in); categories can be switched off so they don't
+   count toward the spending budget (e.g. Rent). Budget page, edit page,
+   live dashboard tile.
 
 Order after the MVP (changed 2026-11-25, so dashboard tiles come alive
 quickest): Budget pot + category limits (from M6) → Accounts (M2.2) with
@@ -101,8 +106,10 @@ Must be done before the app is reachable from anything but localhost.
 4. Debt labels: good vs bad debt.
 
 ## M6 — Budgets, pots and savings goals
-1. Pots: Spending (£80/week), Emergency Fund, ISA, Sinking Funds, each
-   with a target and progress.
+1. Pots: Spending (amount and week/month set by the user — done in the
+   MVP), Emergency Fund, ISA, Sinking Funds, each with a target and
+   progress. Still to do: the Day/Week/Month/Year view that scales a
+   budget to another period, and pay-cycle months (payday to payday).
 2. Savings goals: target amount and date; how much per month to get there.
 
 ## M7 — ISA allowance tracker

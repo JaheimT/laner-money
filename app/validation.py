@@ -9,7 +9,7 @@ import re
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 
-from app.models import CATEGORY_MAX, NOTE_MAX
+from app.models import CATEGORY_MAX, NOTE_MAX, PERIODS
 
 MAX_PENCE = 100_000_000  # £1,000,000.00
 
@@ -111,3 +111,30 @@ def validate_transaction(
         note=values["note"],
         date=values["date"],
     ), {}
+
+
+def parse_period(raw: str) -> str:
+    if raw not in PERIODS:
+        raise ValueError("Choose a week or a month.")
+    return raw
+
+
+def validate_budget(
+    amount: str, period: str, category: str | None = None
+) -> tuple[dict | None, dict[str, str]]:
+    """A budget amount + period, plus a category for category limits.
+    Returns ({amount_pence, period[, category]}, {}) or (None, errors by field)."""
+    errors: dict[str, str] = {}
+    values: dict = {}
+    fields = [("amount", parse_amount, amount), ("period", parse_period, period)]
+    if category is not None:
+        fields.append(("category", parse_category, category))
+    for field, parse, raw in fields:
+        try:
+            values[field] = parse(raw)
+        except ValueError as e:
+            errors[field] = str(e)
+    if errors:
+        return None, errors
+    values["amount_pence"] = values.pop("amount")
+    return values, {}

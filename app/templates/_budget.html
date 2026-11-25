@@ -1,0 +1,39 @@
+{#- Budget pieces shared by the Budget page and the dashboard tile.
+    Status is always icon + word, never colour alone (docs/design.md). -#}
+
+{% macro status(s) -%}
+{%- if s.state == "bad" -%}<span class="status bad">✕ Over by {{ money(-s.left_pence) }}</span>
+{%- elif s.state == "warn" -%}<span class="status warn">⚠ Nearly full</span>
+{%- else -%}<span class="status good">✓ On track</span>{%- endif -%}
+{%- endmacro %}
+
+{% macro bar(s, big=False) -%}
+<svg class="bar{{ ' bar-big' if big }}" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true">
+  <rect class="bar-bg" width="100" height="8" rx="4"/>
+  {% if s.spent_pence %}<rect class="bar-{{ s.state }}" width="{{ [s.bar_percent, 2] | max }}" height="8" rx="4"/>{% endif %}
+</svg>
+{%- endmacro %}
+
+{#- The headline: "£34 left of £80 · 4 days left · ≈ £8.50 a day" -#}
+{% macro headline(s) -%}
+<div class="budget-head">
+  {% if s.left_pence >= 0 %}
+    <span class="big">{{ money(s.left_pence) }} left</span>
+  {% else %}
+    <span class="big out">{{ money(-s.left_pence) }} over</span>
+  {% endif %}
+  <span class="sub">of {{ money(s.amount_pence) }} this {{ s.period }}
+    · {{ s.days_left }} day{{ "s" if s.days_left != 1 }} left
+    {%- if s.per_day_pence %} · ≈ {{ money(s.per_day_pence) }} a day{% endif %}</span>
+</div>
+{{ bar(s, big=True) }}
+<div class="sub">{{ money(s.spent_pence) }} spent · {{ status(s) }}</div>
+{%- endmacro %}
+
+{% macro row(s) -%}
+<div class="bar-row">
+  <span>{{ s.name }} {{ status(s) }}</span>
+  <span class="amt">{{ money(s.spent_pence) }} / {{ money(s.amount_pence) }}<span class="per"> a {{ s.period }}</span></span>
+  {{ bar(s) }}
+</div>
+{%- endmacro %}

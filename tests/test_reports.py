@@ -85,6 +85,6 @@ def test_pre_alembic_database_is_upgraded_in_place(tmp_path):
     con.close()
     make_engine(path).dispose()
     con = sqlite3.connect(path)
-    assert con.execute("SELECT version_num FROM alembic_version").fetchone() == ("0002",)
+    assert con.execute("SELECT version_num FROM alembic_version").fetchone() == ("0003",)
     assert con.execute("SELECT count(*) FROM transactions").fetchone() == (1,)
     assert con.execute("SELECT count(*) FROM users").fetchone() == (0,)

@@ -20,10 +20,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from app import auth, reports
+from app import auth, budget, reports
 from app.db import get_session
 from app.models import CATEGORY_MAX, NOTE_MAX, Transaction
-from app.validation import validate_transaction
+from app.validation import parse_category, validate_budget, validate_transaction
 
 BASE_DIR = Path(__file__).resolve().parent
 DEV = os.environ.get("LANER_ENV") == "dev"
@@ -217,6 +217,7 @@ def dashboard(request: Request, month: str = "", session: Session = Depends(get_
         "summary": reports.month_summary(session, first),
         "recent": reports.recent_transactions(session, limit=5),
         "week": reports.week_spending(session, today),
+        "budget": budget.overview(session, today),
         "calendar": reports.month_calendar(first),
         "today": today,
         "tax_year_end": tax_year_end,
@@ -310,6 +311,118 @@ def delete_transaction(request: Request, tx_id: int, session: Session = Depends(
     session.delete(tx)
     session.commit()
     return RedirectResponse(f"/transactions?month={month}", status_code=303)
+
+
+# ---------------------------------------------------------------------------
+# Budget: /budget shows where you stand; /budget/edit is where amounts are set.
+# ---------------------------------------------------------------------------
+@protected.get("/budget", response_class=HTMLResponse)
+def budget_page(request: Request, session: Session = Depends(get_session)):
+    return render(request, "budget.html", {
+        "page": "budget",
+        "budget": budget.overview(session),
+    })
+
+
+def render_budget_edit(request: Request, session: Session, *, errors=None, form=None,
+                       status_code: int = 200) -> HTMLResponse:
+    spending = budget.get_spending_budget(session)
+    return render(request, "budget_edit.html", {
+        "page": "budget",
+        "spending": spending,
+        "limits": budget.overview(session).categories,
+        "categories": budget.all_categories(session),
+        "excluded": budget.excluded_categories(session),
+        "errors": errors or {},
+        "form": form or {},
+        "category_max": CATEGORY_MAX,
+    }, status_code=status_code)
+
+
+@protected.get("/budget/edit", response_class=HTMLResponse)
+def budget_edit_page(request: Request, session: Session = Depends(get_session)):
+    return render_budget_edit(request, session)
+
+
+# Every budget change goes back to the edit page (Post/Redirect/Get).
+@protected.post("/budget/spending")
+def save_spending_budget(
+    request: Request,
+    session: Session = Depends(get_session),
+    amount: str = Form("", max_length=20),
+    period: str = Form("", max_length=10),
+    csrf_token: str = Form("", max_length=100),
+):
+    if not csrf_ok(request, csrf_token):
+        return csrf_failed()
+    clean, errors = validate_budget(amount, period)
+    if errors:
+        return render_budget_edit(request, session, status_code=400,
+                                  errors={f"spending_{k}": v for k, v in errors.items()},
+                                  form={"spending_amount": amount, "spending_period": period})
+    budget.set_spending_budget(session, clean["amount_pence"], clean["period"])
+    return RedirectResponse("/budget/edit#spending", status_code=303)
+
+
+@protected.post("/budget/spending/delete")
+def remove_spending_budget(request: Request, session: Session = Depends(get_session),
+                           csrf_token: str = Form("", max_length=100)):
+    if not csrf_ok(request, csrf_token):
+        return csrf_failed()
+    budget.clear_spending_budget(session)
+    return RedirectResponse("/budget/edit#spending", status_code=303)
+
+
+@protected.post("/budget/limits")
+def save_category_budget(
+    request: Request,
+    session: Session = Depends(get_session),
+    category: str = Form("", max_length=200),
+    amount: str = Form("", max_length=20),
+    period: str = Form("", max_length=10),
+    csrf_token: str = Form("", max_length=100),
+):
+    if not csrf_ok(request, csrf_token):
+        return csrf_failed()
+    clean, errors = validate_budget(amount, period, category)
+    if errors:
+        return render_budget_edit(request, session, status_code=400,
+                                  errors={f"limit_{k}": v for k, v in errors.items()},
+                                  form={"limit_category": category, "limit_amount": amount,
+                                        "limit_period": period})
+    budget.set_category_budget(session, clean["category"], clean["amount_pence"], clean["period"])
+    return RedirectResponse("/budget/edit#limits", status_code=303)
+
+
+@protected.post("/budget/limits/{budget_id}/delete")
+def remove_category_budget(request: Request, budget_id: int,
+                           session: Session = Depends(get_session),
+                           csrf_token: str = Form("", max_length=100)):
+    if not csrf_ok(request, csrf_token):
+        return csrf_failed()
+    if not budget.delete_category_budget(session, budget_id):
+        return PlainTextResponse("No such budget.", status_code=404)
+    return RedirectResponse("/budget/edit#limits", status_code=303)
+
+
+@protected.post("/budget/counts")
+def save_counts(
+    request: Request,
+    session: Session = Depends(get_session),
+    category: str = Form("", max_length=200),
+    counts: str = Form("", max_length=1),
+    csrf_token: str = Form("", max_length=100),
+):
+    if not csrf_ok(request, csrf_token):
+        return csrf_failed()
+    try:
+        name = parse_category(category)
+    except ValueError as e:
+        return PlainTextResponse(str(e), status_code=400)
+    if counts not in ("0", "1"):
+        return PlainTextResponse("Bad request.", status_code=400)
+    budget.set_counts(session, name, counts == "1")
+    return RedirectResponse("/budget/edit#counts", status_code=303)
 
 
 app.include_router(protected)

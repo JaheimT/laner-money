@@ -247,8 +247,13 @@ next to the sidebar. Numbers are made up.
 - Top line answers "how much can I spend?", including a per-day figure.
 - Moss = fine, ochre = nearly full, clay = over.
 - Toggle **Day / Week / Month / Year**; ‹ › steps back and forward one
-  period. Defaults to Week (matches the £80/week Spending pot); the last
-  choice is remembered.
+  period. Defaults to the spending budget's own period; the last choice is
+  remembered. (Not built yet: for now each budget shows in its own period.)
+- **Amounts are always set by the user** on the Edit budget page; the app
+  never assumes one. The numbers in these sketches are only examples.
+- Categories can be switched off so they don't count toward the spending
+  budget (e.g. Rent, Bills); category limits still count their own spending.
+- Status: ✓ On track; ⚠ Nearly full at 85% used or more; ✕ Over by £X.
 - Each budget has a home period (e.g. £80 a **week**). Other views scale
   it: Day ≈ £11.43, Month = £80 × days in month ÷ 7, Year ≈ £4,171. Scaled
   figures are marked "≈" so it's clear they're worked out, not set.

@@ -1,5 +1,6 @@
 {% extends "app.html" %}
 {% from "_amount.html" import amount %}
+{% import "_budget.html" as b %}
 {% block title %}Dashboard{% endblock %}
 
 {#- A tile whose feature isn't built yet: honest empty state, never fake numbers.
@@ -52,13 +53,24 @@
   </section>
 
   <section class="w medium">
-    <h2>Budget: this week</h2>
-    <div class="budget-head">
-      <span class="big">{{ money(week.out_pence) }}</span>
-      <span class="sub">spent {{ week.start.strftime("%a %-d") }} – {{ week.end.strftime("%a %-d %b") }}
-        · {{ week.days_left }} day{{ "s" if week.days_left != 1 }} left</span>
-    </div>
-    {{ coming("Set a weekly budget (e.g. £80) and category limits to see what's left and progress bars here.") }}
+    {% if budget.is_empty %}
+      <h2>Budget: this week</h2>
+      <div class="budget-head">
+        <span class="big">{{ money(week.out_pence) }}</span>
+        <span class="sub">spent {{ week.start.strftime("%a %-d") }} – {{ week.end.strftime("%a %-d %b") }}
+          · {{ week.days_left }} day{{ "s" if week.days_left != 1 }} left</span>
+      </div>
+      <p class="sub">Choose your own weekly or monthly amount and category limits to see what's left here.</p>
+      <a class="btn primary" href="/budget/edit">Set your budget</a>
+    {% else %}
+      <h2>Budget{% if budget.spending %}: this {{ budget.spending.period }}{% endif %}
+        <a class="more" href="/budget">Open ›</a></h2>
+      {% if budget.spending %}{{ b.headline(budget.spending) }}{% endif %}
+      {% for s in budget.categories[:4] %}{{ b.row(s) }}{% endfor %}
+      {% if budget.categories | length > 4 %}
+        <p class="sub"><a href="/budget">+ {{ budget.categories | length - 4 }} more</a></p>
+      {% endif %}
+    {% endif %}
   </section>
 
   {# ---------- Row 3: bills ---------- #}
