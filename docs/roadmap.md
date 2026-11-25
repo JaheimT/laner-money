@@ -20,7 +20,7 @@ production. Solarpunk palette; violet only for security/auth states.
 FastAPI + SQLAlchemy + Jinja2. List and add transactions; security basics
 (ADR 0003).
 
-## M1 — Design: navigation and look (CURRENT)
+## M1 — Design: navigation and look (steps 1–4 ✅; 5–7 paused for MVP)
 Simple but effective: decide how the whole app fits together *before*
 building lots of pages, so features slot into a plan instead of piling up.
 1. List every screen the finished Phase 1 app needs, and the main
@@ -38,6 +38,22 @@ building lots of pages, so features slot into a plan instead of piling up.
 6. Static HTML/CSS mockups of the key screens with fake data. Check on a
    phone-sized screen too.
 7. Write it up in docs/design.md so later milestones follow it.
+
+## MVP — usable on my homelab (CURRENT, 2026-11-25)
+Pulled forward from M2–M4 so I can start logging real spending now,
+from anywhere on my tailnet. Done in order:
+1. Alembic baseline (M2.1), so real data survives later schema changes.
+2. Dashboard v1 as home: this month's in / out / net, spending by
+   category, daily spending, recent transactions; transactions page by
+   month with delete; add-transaction page. M1 design system, light and
+   dark.
+3. Login (M3.1–3.3): Argon2id password set by a command, secure
+   sessions with expiry and logout, login rate limiting, violet screens.
+4. Docker (M4.1–4.2): Dockerfile, docker-compose.yml, `.env.example`.
+5. HTTPS over Tailscale Serve only (M4.3).
+6. Basic nightly SQLite backups (first part of M4.4).
+Still to do in their own milestones: M1 steps 5–7, the rest of M2,
+the M3.4 security pass, tested restore and update procedure (M4.4).
 
 ## M2 — Foundations (localhost only)
 1. Alembic migrations — before any real data goes in.

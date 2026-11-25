@@ -8,8 +8,9 @@ A self-hosted personal finance app for my homelab, built in Python.
 
 Laner Money is a lightweight, self-hosted personal finance app: track
 transactions, see where the money goes, and keep the data on my own
-hardware. It runs in an LXC container on a Proxmox homelab, reachable over
-the LAN and Tailscale only, never the public internet.
+hardware. It runs in Docker on my homelab, reachable over Tailscale only
+(HTTPS via Tailscale Serve), never the public internet. See
+[docs/deploy.md](docs/deploy.md).
 
 It started life in C with a hand-rolled HTTP server (see `archive/` and
 `docs/decisions/0003-switch-to-python.md`). It's now Python, so it's usable
@@ -33,6 +34,8 @@ sooner. The security mindset came across unchanged.
 | Database | SQLite via SQLAlchemy ORM | One file, no server process, easy backups. The ORM means no hand-built SQL. |
 | Templates | Jinja2 (server-rendered HTML) | No JavaScript build step; autoescaping on by default. |
 | Forms | python-multipart | Required by FastAPI to read HTML form posts. |
+| Migrations | Alembic | Schema changes without losing data. Run automatically on start. |
+| Passwords | argon2-cffi (Argon2id) | Standard, memory-hard password hashing. |
 
 ## Security from day one
 
@@ -47,8 +50,14 @@ sooner. The security mindset came across unchanged.
 - **No debug in production:** API docs only exist with `LANER_ENV=dev`. Never
   run with `--reload` outside development.
 - **No secrets in code:** configuration comes from environment variables.
-- **Network:** binds to `127.0.0.1` for now. LAN/Tailscale access waits until
-  there's a login.
+- **Login:** one password, Argon2id-hashed, set by a command. Sessions are
+  random tokens (only their SHA-256 is stored) in HttpOnly, Secure,
+  SameSite=Strict cookies that expire after 14 days. 5 wrong passwords
+  lock login for 15 minutes. Every page except login needs a session (a
+  test checks this).
+- **Network:** the container binds to `127.0.0.1`; Tailscale Serve adds
+  HTTPS for the tailnet. Never public.
+- **Container:** non-root user, read-only filesystem, no capabilities.
 
 ## Design language
 
@@ -82,12 +91,16 @@ LANER_ENV=dev .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
 .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Then open <http://127.0.0.1:8000>.
+Set a password once (`.venv/bin/python -m app.cli set-password`), then open
+<http://localhost:8000>. Use `localhost`: the cookies are `Secure`, and
+browsers only allow that over plain HTTP on localhost.
 
 | Environment variable | Default | Meaning |
 |---|---|---|
 | `LANER_DB_PATH` | `data/laner.db` | Where the SQLite file lives |
 | `LANER_ENV` | *(unset)* | `dev` turns on the API docs pages |
+| `LANER_BACKUP_DIR` | `backups` | Where `python -m app.backup` writes |
+| `BACKUP_KEEP` / `BACKUP_HOUR` | `14` / `3` | Backups to keep; nightly hour |
 
 ## Tests
 
@@ -100,11 +113,18 @@ Then open <http://127.0.0.1:8000>.
 
 ```
 app/
-  main.py        — routes, CSRF, security headers
-  models.py      — database setup and the Transaction model
+  main.py        — routes, login check, CSRF, security headers
+  auth.py        — password hashing, sessions, login rate limit
+  db.py          — database connection, migrations on start-up
+  models.py      — the database tables
+  reports.py     — dashboard / monthly numbers
   validation.py  — form input rules
+  cli.py         — `python -m app.cli set-password`
+  backup.py      — `python -m app.backup [--loop]`
+  migrations/    — Alembic migration files
   templates/     — Jinja2 HTML
   static/        — CSS
+Dockerfile, docker-compose.yml, .env.example — homelab deploy
 tests/           — pytest tests
 docs/decisions/  — architecture decision records: why we chose what we chose
 data/            — SQLite database at runtime (gitignored)
