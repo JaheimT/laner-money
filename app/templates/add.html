@@ -1,0 +1,51 @@
+{% extends "app.html" %}
+{% block title %}Add transaction{% endblock %}
+{% block content %}
+<div class="topbar"><h1>Add transaction</h1></div>
+
+<section class="w form-card">
+  {% if saved %}<p class="notice" role="status">✓ Saved. Add another?</p>{% endif %}
+  {% if errors %}<p class="error-summary" role="alert">✕ Please fix the highlighted fields.</p>{% endif %}
+
+  <form method="post" action="/transactions" class="tx-form" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <fieldset class="kind">
+      <legend>Type</legend>
+      <label><input type="radio" name="kind" value="expense" {% if form.kind != "income" %}checked{% endif %}> Expense</label>
+      <label><input type="radio" name="kind" value="income" {% if form.kind == "income" %}checked{% endif %}> Income</label>
+      {% if errors.kind %}<span class="field-error">{{ errors.kind }}</span>{% endif %}
+    </fieldset>
+
+    <label class="amount">Amount (£)
+      <input name="amount" inputmode="decimal" placeholder="0.00" maxlength="10" autofocus
+             value="{{ form.amount or '' }}" required autocomplete="off">
+      {% if errors.amount %}<span class="field-error">{{ errors.amount }}</span>{% endif %}
+    </label>
+
+    <label>Category
+      <input name="category" placeholder="Groceries" maxlength="{{ category_max }}" list="categories"
+             value="{{ form.category or '' }}" required autocomplete="off">
+      <datalist id="categories">
+        {% for c in categories %}<option value="{{ c }}">{% endfor %}
+      </datalist>
+      {% if errors.category %}<span class="field-error">{{ errors.category }}</span>{% endif %}
+    </label>
+
+    <label>Date
+      <input name="date" type="date" value="{{ form.date or '' }}" required>
+      {% if errors.date %}<span class="field-error">{{ errors.date }}</span>{% endif %}
+    </label>
+
+    <label>Note (optional)
+      <input name="note" maxlength="{{ note_max }}" value="{{ form.note or '' }}" autocomplete="off">
+      {% if errors.note %}<span class="field-error">{{ errors.note }}</span>{% endif %}
+    </label>
+
+    <div class="actions">
+      <button type="submit" name="then" value="dashboard" class="btn primary">Save</button>
+      <button type="submit" name="then" value="add" class="btn secondary">Save &amp; add another</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

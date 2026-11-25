@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{#- Layout for every logged-in page: sidebar + main area (docs/design.md,
+    "Navigation"). Screens that don't exist yet aren't listed. -#}
+{% block body %}
+<div class="app">
+  <nav class="sidebar" aria-label="Main">
+    <div class="logo">🌿 Laner Money</div>
+    <a class="add-btn" href="/add">+ Add transaction</a>
+    <div class="nav">
+      <a href="/" {% if page == "dashboard" %}class="active" aria-current="page"{% endif %}>▣ Dashboard</a>
+      <a href="/transactions" {% if page == "transactions" %}class="active" aria-current="page"{% endif %}>≡ Transactions</a>
+      <div class="sep"></div>
+      <form method="post" action="/logout">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="lock">🔒 Lock</button>
+      </form>
+    </div>
+  </nav>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% if page != "add" %}<a class="fab" href="/add" aria-label="Add transaction">+</a>{% endif %}
+{% endblock %}

@@ -1,0 +1,7 @@
+{#- ‹ November 2026 › : steps one month back or forward on the current page. -#}
+<div class="stepper">
+  <a href="?month={{ prev_key }}" aria-label="Previous month">‹</a>
+  <span class="label">{{ summary.label }}</span>
+  <a href="?month={{ next_key }}" aria-label="Next month">›</a>
+  {% if not is_current %}<a class="today-link" href="?">This month</a>{% endif %}
+</div>

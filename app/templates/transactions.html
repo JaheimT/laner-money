@@ -1,0 +1,36 @@
+{% extends "app.html" %}
+{% from "_amount.html" import amount %}
+{% block title %}Transactions{% endblock %}
+{% block content %}
+<div class="topbar">
+  <h1>Transactions</h1>
+  {% include "_month_stepper.html" %}
+</div>
+
+<section class="w totals">
+  <span>In <b>{{ money(summary.in_pence) }}</b></span>
+  <span>Out <b>{{ money(summary.out_pence) }}</b></span>
+  <span>Net <b class="{{ 'out' if summary.net_pence < 0 else 'in' }}">{{ money(summary.net_pence, signed=True) }}</b></span>
+</section>
+
+<section class="w">
+{% for day in summary.by_day() %}
+  <div class="day-head">
+    <span>{{ day.date.strftime("%a %-d %b") }}</span>
+    <span class="num">{{ amount(day.total_pence) }}</span>
+  </div>
+  <ul class="tx-list">
+  {% for t in day.transactions %}
+    <li>
+      <span class="cat">{{ t.category }}</span>
+      <span class="note">{{ t.note or "" }}</span>
+      <span class="num">{{ amount(t.amount_pence) }}</span>
+      <a class="del" href="/transactions/{{ t.id }}/delete" aria-label="Delete {{ t.category }} {{ money(t.amount_pence) }}">✕</a>
+    </li>
+  {% endfor %}
+  </ul>
+{% else %}
+  <p class="empty">No transactions in {{ summary.label }}. <a href="/add">Add one</a></p>
+{% endfor %}
+</section>
+{% endblock %}

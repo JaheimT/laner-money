@@ -1,0 +1,4 @@
+{#- A transaction amount: sign first, then colour (never colour alone). -#}
+{% macro amount(pence) -%}
+<span class="{{ 'out' if pence < 0 else 'in' }}">{{ money(pence, signed=True) }}</span>
+{%- endmacro %}

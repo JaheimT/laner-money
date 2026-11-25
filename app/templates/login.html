@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{#- Login is a security state, so it uses violet (docs/design.md). -#}
+{% block title %}Log in{% endblock %}
+{% block body %}
+<main class="login">
+  <section class="login-card">
+    <div class="login-icon" aria-hidden="true">🔒</div>
+    <h1>Laner Money</h1>
+    {% if setup_needed %}
+      <p>No password has been set yet. On the server, run:</p>
+      <pre>docker compose exec laner python -m app.cli set-password</pre>
+      <p class="sub">(Running from source instead: <code>.venv/bin/python -m app.cli set-password</code>.) Then reload this page.</p>
+    {% else %}
+      {% if seconds_locked %}
+        <p class="error-summary" role="alert">✕ Too many wrong passwords. Try again in about {{ (seconds_locked + 59) // 60 }} minute{{ "s" if seconds_locked > 60 }}.</p>
+      {% elif error %}
+        <p class="error-summary" role="alert">✕ {{ error }}</p>
+      {% endif %}
+      <form method="post" action="/login">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label>Password
+          <input type="password" name="password" maxlength="{{ password_max }}" autocomplete="current-password" autofocus required>
+        </label>
+        <button type="submit" class="btn security">Unlock</button>
+      </form>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

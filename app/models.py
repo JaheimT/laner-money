@@ -1,20 +1,16 @@
-"""Database setup and the Transaction model.
+"""The database tables, as Python classes.
 
-All database access goes through SQLAlchemy's ORM, which always sends
-values as bound parameters, so user input is never pasted into SQL text.
+No side effects on import (the Alembic command line imports this file).
+Connecting and migrating live in app/db.py.
+
+The schema is owned by Alembic migrations (app/migrations), not by
+create_all: every change to a model here needs a new migration file.
 """
 
 import datetime
-import os
-from pathlib import Path
 
-from sqlalchemy import Date, Integer, String, create_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
-
-# Where the SQLite file lives. Configurable so the LXC deployment can put it
-# somewhere like /var/lib/laner/laner.db. Relative paths resolve from the
-# directory the app is started in (the repo root during development).
-DB_PATH = Path(os.environ.get("LANER_DB_PATH", "data/laner.db"))
+from sqlalchemy import Date, DateTime, Integer, String
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 # Shared limits: used by the column definitions here and by validation.py,
 # so the database and the form can never disagree.
@@ -35,25 +31,25 @@ class Transaction(Base):
     category: Mapped[str] = mapped_column(String(CATEGORY_MAX), nullable=False)
     note: Mapped[str | None] = mapped_column(String(NOTE_MAX), nullable=True)
     # Stored by SQLite as ISO 8601 text ("2026-11-22").
-    date: Mapped[datetime.date] = mapped_column(Date, nullable=False)
+    date: Mapped[datetime.date] = mapped_column(Date, nullable=False, index=True)
 
 
-def make_engine(path: Path = DB_PATH):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    engine = create_engine(f"sqlite:///{path}")
-    # create_all only creates missing tables; it never alters existing ones.
-    # Schema changes later will need a proper migration (e.g. Alembic).
-    Base.metadata.create_all(engine)
-    # The file holds financial data: owner read/write only.
-    os.chmod(path, 0o600)
-    return engine
+class User(Base):
+    """The single user. Only ever one row (id=1); holds the password hash."""
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # Argon2id hash in PHC format ("$argon2id$v=19$m=...$salt$hash").
+    password_hash: Mapped[str] = mapped_column(String(200), nullable=False)
+    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
 
 
-engine = make_engine()
-SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
+class LoginSession(Base):
+    """A logged-in browser. The cookie holds a random token; only its SHA-256
+    is stored, so a leaked database (or backup) can't be used to log in."""
+    __tablename__ = "login_sessions"
 
-
-def get_session():
-    """FastAPI dependency: one session per request, always closed."""
-    with SessionLocal() as session:
-        yield session
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
+    expires_at: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)

@@ -5,3 +5,5 @@ uvicorn==0.54.0
 SQLAlchemy==2.1.9
 Jinja2==3.1.6
 python-multipart==0.0.34
+alembic==1.20.1        # database migrations
+argon2-cffi==25.1.0    # password hashing (Argon2id)

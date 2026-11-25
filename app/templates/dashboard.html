@@ -1,0 +1,103 @@
+{% extends "app.html" %}
+{% from "_amount.html" import amount %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="topbar">
+  <h1>Dashboard</h1>
+  {% include "_month_stepper.html" %}
+</div>
+
+<div class="grid">
+  {# Row 1: headline numbers for the month #}
+  <section class="w">
+    <h2>Net this month</h2>
+    <div class="big {{ 'out' if summary.net_pence < 0 else 'in' }}">{{ money(summary.net_pence, signed=True) }}</div>
+    <div class="sub">Money in − money out</div>
+  </section>
+  <section class="w">
+    <h2>Money in</h2>
+    <div class="big">{{ money(summary.in_pence) }}</div>
+  </section>
+  <section class="w">
+    <h2>Money out</h2>
+    <div class="big">{{ money(summary.out_pence) }}</div>
+  </section>
+  <section class="w">
+    <h2>Spend per day</h2>
+    {% if summary.avg_daily_out_pence is not none %}
+      <div class="big">≈ {{ money(summary.avg_daily_out_pence) }}</div>
+      <div class="sub">over {{ summary.days_so_far }} day{{ "s" if summary.days_so_far != 1 }}</div>
+    {% else %}
+      <div class="big muted">–</div>
+      <div class="sub">This month hasn't started yet</div>
+    {% endif %}
+  </section>
+
+  {# Row 2: where it went, and when #}
+  <section class="w medium">
+    <h2>Spending by category <a class="more" href="/transactions?month={{ summary.key }}">Details ›</a></h2>
+    {% if summary.categories %}
+      {% for c in summary.categories[:8] %}
+      <div class="bar-row">
+        <span>{{ c.name }}</span><span class="amt">{{ money(c.out_pence) }}</span>
+        <svg class="bar" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true">
+          <rect class="bar-bg" width="100" height="8" rx="4"/>
+          <rect class="bar-fill" width="{{ [c.share * 100, 2] | max }}" height="8" rx="4"/>
+        </svg>
+      </div>
+      {% endfor %}
+      {% if summary.categories | length > 8 %}
+        <p class="sub">+ {{ summary.categories | length - 8 }} more on the transactions page</p>
+      {% endif %}
+    {% else %}
+      <p class="empty">No spending in {{ summary.label }}. <a href="/add">Add a transaction</a></p>
+    {% endif %}
+  </section>
+
+  <section class="w medium">
+    <h2>Spending each day</h2>
+    {% set biggest = summary.daily_out | max %}
+    {% if biggest %}
+      {% set n = summary.daily_out | length %}
+      <svg class="daily" viewBox="0 0 {{ n * 10 }} 100" preserveAspectRatio="none"
+           role="img" aria-label="Spending per day in {{ summary.label }}; biggest day {{ money(biggest) }}">
+        {% for pence in summary.daily_out %}
+          {% set h = (pence / biggest * 96) if pence else 0 %}
+          <rect class="day-bg" x="{{ loop.index0 * 10 + 1.5 }}" y="0" width="7" height="100"/>
+          {% if pence %}
+          <rect class="day-bar" x="{{ loop.index0 * 10 + 1.5 }}" y="{{ 100 - h }}" width="7" height="{{ h }}">
+            <title>{{ loop.index }} {{ summary.first.strftime('%b') }}: {{ money(pence) }}</title>
+          </rect>
+          {% endif %}
+        {% endfor %}
+      </svg>
+      <div class="daily-axis"><span>1</span><span>{{ (n + 1) // 2 }}</span><span>{{ n }}</span></div>
+      <p class="sub">Biggest day: {{ money(biggest) }}</p>
+    {% else %}
+      <p class="empty">Nothing spent yet in {{ summary.label }}.</p>
+    {% endif %}
+  </section>
+
+  {# Row 3: latest entries, whatever the month #}
+  <section class="w wide">
+    <h2>Recent transactions <a class="more" href="/transactions">All ›</a></h2>
+    {% if recent %}
+    <table>
+      <thead><tr><th>Date</th><th>Category</th><th class="hide-narrow">Note</th><th class="num">Amount</th></tr></thead>
+      <tbody>
+      {% for t in recent %}
+        <tr>
+          <td>{{ t.date.strftime("%a %-d %b") }}</td>
+          <td>{{ t.category }}</td>
+          <td class="hide-narrow">{{ t.note or "" }}</td>
+          <td class="num">{{ amount(t.amount_pence) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="empty">No transactions yet. <a href="/add">Add your first one</a></p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "app.html" %}
+{% block title %}Delete transaction{% endblock %}
+{% block content %}
+<div class="topbar"><h1>Delete this transaction?</h1></div>
+<section class="w form-card">
+  <p><b>{{ money(t.amount_pence, signed=True) }}</b> · {{ t.category }} · {{ t.date.strftime("%a %-d %b %Y") }}</p>
+  {% if t.note %}<p class="sub">{{ t.note }}</p>{% endif %}
+  <p class="sub">This can't be undone.</p>
+  <form method="post" action="/transactions/{{ t.id }}/delete" class="actions">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button type="submit" class="btn danger">Delete</button>
+    <a class="btn secondary" href="/transactions?month={{ t.date.strftime('%Y-%m') }}">Cancel</a>
+  </form>
+</section>
+{% endblock %}
