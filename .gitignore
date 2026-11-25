@@ -7,6 +7,7 @@ __pycache__/
 # --- Secrets / local config: NEVER commit --------------------------------
 .env
 .env.*
+!.env.example
 
 # --- Runtime data: NEVER commit -----------------------------------------
 # The SQLite database holds real financial data. Ignore every DB file in

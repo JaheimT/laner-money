@@ -1,0 +1,6 @@
+# Only requirements.txt and app/ are needed in the image. Keep the real
+# database, secrets and everything else out of the build context.
+*
+!requirements.txt
+!app
+app/**/__pycache__

@@ -1,0 +1,47 @@
+# Laner Money on the homelab.
+#
+#   cp .env.example .env          # then edit if you like
+#   docker compose up -d --build
+#   docker compose exec laner python -m app.cli set-password
+#
+# The app listens on 127.0.0.1 only: nothing on the LAN or internet can
+# reach it directly. Tailscale Serve on this host adds HTTPS for the
+# tailnet (see docs/deploy.md).
+
+x-hardening: &hardening
+  read_only: true                 # container filesystem can't be changed...
+  tmpfs: [/tmp]                   # ...except scratch space
+  cap_drop: [ALL]                 # no Linux capabilities needed
+  security_opt: [no-new-privileges:true]
+  env_file: .env
+  restart: unless-stopped
+
+services:
+  laner:
+    <<: *hardening
+    build: .
+    image: laner-money:local
+    container_name: laner-money
+    ports:
+      - "127.0.0.1:${LANER_PORT:-8000}:8000"
+    volumes:
+      - laner-data:/data
+
+  backup:
+    <<: *hardening
+    build: .
+    image: laner-money:local
+    container_name: laner-money-backup
+    command: ["python", "-m", "app.backup", "--loop"]
+    healthcheck:
+      disable: true
+    depends_on:
+      laner:
+        condition: service_healthy   # the app creates the database first
+    volumes:
+      - laner-data:/data
+      - laner-backups:/backups
+
+volumes:
+  laner-data:
+  laner-backups:
