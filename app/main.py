@@ -210,10 +210,17 @@ def month_nav(first: datetime.date) -> dict:
 @protected.get("/", response_class=HTMLResponse)
 def dashboard(request: Request, month: str = "", session: Session = Depends(get_session)):
     first = reports.parse_month(month)
+    today = datetime.date.today()
+    tax_year_end = reports.tax_year_end(today)
     return render(request, "dashboard.html", {
         "page": "dashboard",
         "summary": reports.month_summary(session, first),
-        "recent": reports.recent_transactions(session),
+        "recent": reports.recent_transactions(session, limit=5),
+        "week": reports.week_spending(session, today),
+        "calendar": reports.month_calendar(first),
+        "today": today,
+        "tax_year_end": tax_year_end,
+        "tax_days_left": (tax_year_end - today).days,
         **month_nav(first),
     })
 

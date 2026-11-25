@@ -119,6 +119,39 @@ def month_summary(session: Session, first: datetime.date,
     return summary
 
 
+@dataclass
+class WeekSpending:
+    start: datetime.date      # Monday
+    end: datetime.date        # Sunday
+    out_pence: int
+    days_left: int            # including today
+
+
+def week_spending(session: Session, today: datetime.date | None = None) -> WeekSpending:
+    """Money out so far this week (Monday to Sunday)."""
+    today = today or datetime.date.today()
+    start = today - datetime.timedelta(days=today.weekday())
+    end = start + datetime.timedelta(days=6)
+    amounts = session.scalars(
+        select(Transaction.amount_pence)
+        .where(Transaction.date >= start, Transaction.date <= end, Transaction.amount_pence < 0)
+    ).all()
+    return WeekSpending(start, end, -sum(amounts), (end - today).days + 1)
+
+
+def month_calendar(first: datetime.date) -> list[list[datetime.date | None]]:
+    """Weeks (Monday first) of the month; days from other months are None."""
+    return [[d if d.month == first.month else None for d in week]
+            for week in calendar.Calendar().monthdatescalendar(first.year, first.month)]
+
+
+def tax_year_end(today: datetime.date | None = None) -> datetime.date:
+    """UK tax years run 6 April to 5 April."""
+    today = today or datetime.date.today()
+    end = datetime.date(today.year, 4, 5)
+    return end if today <= end else datetime.date(today.year + 1, 4, 5)
+
+
 def recent_transactions(session: Session, limit: int = 8) -> list[Transaction]:
     return list(session.scalars(
         select(Transaction).order_by(Transaction.date.desc(), Transaction.id.desc()).limit(limit)

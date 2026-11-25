@@ -114,7 +114,11 @@ but organised:
   visual (sparkline, progress bar, mini calendar). Tap for the full screen.
 - Most important widgets are biggest and top-left.
 - Same layout every time, so your eyes learn where things live.
-- On a phone, widgets stack in one column in the same priority order.
+- On a phone, small widgets sit two per row and bigger ones take the full
+  width, in the same priority order.
+- Until a widget's feature exists, it still holds its place but shows an
+  empty state: dashed border, "Coming soon", and what turns it on. Never
+  fake numbers.
 
 Default layout (wide screen). Numbers are made up:
 

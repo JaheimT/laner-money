@@ -161,6 +161,38 @@ input:not([type=radio]), select {
 .login-card pre { background: var(--page); padding: var(--s2) var(--s3); border-radius: var(--radius-sm);
                   font-size: 12px; white-space: pre-wrap; word-break: break-all; }
 
+/* ---------- Dashboard tiles from the control-room mockup ---------- */
+.inout { display: flex; gap: var(--s4); font-size: 14px; color: var(--ink-2); margin: var(--s1) 0; }
+.inout b { color: var(--ink); }
+.budget-head { display: flex; align-items: baseline; gap: var(--s3); flex-wrap: wrap; margin-bottom: var(--s2); }
+.budget-head .big { font-size: 24px; }
+.strong { font-weight: 600; }
+
+/* A tile whose feature isn't built yet: dashed, quieter, says what turns it on. */
+.w.pending { border-style: dashed; border-color: var(--line-strong); background: color-mix(in srgb, var(--surface) 55%, var(--page)); }
+.coming { font-size: 14px; color: var(--ink-2); margin: var(--s2) 0 0; }
+.coming-tag { display: inline-block; font-size: 12px; font-weight: 600; color: var(--ink-muted);
+              border: 1px solid var(--line-strong); border-radius: 999px; padding: 0 var(--s2); margin-right: var(--s1); }
+.ghost-chart { width: 100%; height: 120px; display: block; }
+.ghost-chart line { stroke: var(--grid); stroke-width: 1; vector-effect: non-scaling-stroke; }
+
+/* Bills: month calendar */
+.bills { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; font-size: 12px; text-align: center; }
+.cal .dow { color: var(--ink-muted); font-weight: 600; padding-bottom: var(--s1); }
+.cal .d { padding: var(--s1) 0 var(--s2); border-radius: 4px; color: var(--ink-2); }
+.cal .d.today { outline: 2px solid var(--accent); outline-offset: -2px; font-weight: 700; color: var(--ink); }
+.cal-key { font-size: 12px; color: var(--ink-muted); margin-top: var(--s2); }
+.pending-inner { border: 1px dashed var(--line-strong); border-radius: var(--radius-sm); padding: var(--s3); }
+
+/* Small lists (Recent) */
+.list { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.list li { display: flex; gap: var(--s2); padding: 6px 0; border-bottom: 1px solid var(--line); }
+.list li:last-child { border-bottom: 0; }
+.list .when { color: var(--ink-muted); width: 48px; flex: none; }
+.list .what { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list .amt { margin-left: auto; white-space: nowrap; }
+
 /* ---------- Floating add button (phones) ---------- */
 .fab { display: none; position: fixed; right: var(--s4); bottom: var(--s4); width: 56px; height: 56px;
        border-radius: 50%; background: var(--brand); color: var(--brand-ink); font-size: 32px; line-height: 56px;
@@ -186,6 +218,7 @@ input:not([type=radio]), select {
   .w.medium, .w.wide { grid-column: span 2; }
   .big { font-size: 22px; }
   .hide-narrow { display: none; }
+  .bills { grid-template-columns: 1fr; }
   .tx-list li { grid-template-columns: minmax(0, 1fr) auto 32px; }
   .tx-list .note { display: none; }
   .fab { display: block; }

@@ -1,39 +1,114 @@
 {% extends "app.html" %}
 {% from "_amount.html" import amount %}
 {% block title %}Dashboard{% endblock %}
+
+{#- A tile whose feature isn't built yet: honest empty state, never fake numbers.
+    `needs` says what turns it on. -#}
+{% macro coming(needs) -%}
+<p class="coming"><span class="coming-tag">Coming soon</span> {{ needs }}</p>
+{%- endmacro %}
+
 {% block content %}
 <div class="topbar">
   <h1>Dashboard</h1>
   {% include "_month_stepper.html" %}
 </div>
 
+{#- Layout follows the M1 control-room mockup (docs/mockups/dashboard.html). -#}
 <div class="grid">
-  {# Row 1: headline numbers for the month #}
+  {# ---------- Row 1: headline numbers ---------- #}
+  <section class="w pending">
+    <h2>Net worth</h2>
+    <div class="big muted">£—</div>
+    {{ coming("Add your accounts to see what you own minus what you owe.") }}
+  </section>
+  <section class="w pending">
+    <h2>Cash</h2>
+    <div class="big muted">£—</div>
+    {{ coming("Comes with accounts: money in current and savings accounts.") }}
+  </section>
+  <section class="w pending">
+    <h2>Debt</h2>
+    <div class="big muted">£—</div>
+    {{ coming("Comes with accounts: credit cards, loans and overdrafts.") }}
+  </section>
   <section class="w">
-    <h2>Net this month</h2>
+    <h2>{{ "This month" if is_current else summary.label }}</h2>
     <div class="big {{ 'out' if summary.net_pence < 0 else 'in' }}">{{ money(summary.net_pence, signed=True) }}</div>
-    <div class="sub">Money in − money out</div>
+    <div class="inout">
+      <span>In <b>{{ money(summary.in_pence) }}</b></span>
+      <span>Out <b>{{ money(summary.out_pence) }}</b></span>
+    </div>
+    <div class="sub">Net = money in − money out</div>
+  </section>
+
+  {# ---------- Row 2: net worth chart + budget ---------- #}
+  <section class="w medium pending">
+    <h2>Net worth over time</h2>
+    <svg class="ghost-chart" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">
+      <line x1="0" y1="10" x2="100" y2="10"/><line x1="0" y1="20" x2="100" y2="20"/><line x1="0" y1="30" x2="100" y2="30"/>
+    </svg>
+    {{ coming("A line chart of your net worth, month by month, once accounts exist.") }}
+  </section>
+
+  <section class="w medium">
+    <h2>Budget: this week</h2>
+    <div class="budget-head">
+      <span class="big">{{ money(week.out_pence) }}</span>
+      <span class="sub">spent {{ week.start.strftime("%a %-d") }} – {{ week.end.strftime("%a %-d %b") }}
+        · {{ week.days_left }} day{{ "s" if week.days_left != 1 }} left</span>
+    </div>
+    {{ coming("Set a weekly budget (e.g. £80) and category limits to see what's left and progress bars here.") }}
+  </section>
+
+  {# ---------- Row 3: bills ---------- #}
+  <section class="w wide">
+    <h2>Bills: {{ summary.first.strftime("%B") }}</h2>
+    <div class="bills">
+      <div>
+        <div class="cal" role="table" aria-label="{{ summary.label }}">
+          {% for dow in ["M", "T", "W", "T", "F", "S", "S"] %}<div class="dow" role="columnheader">{{ dow }}</div>{% endfor %}
+          {% for week_days in calendar %}{% for d in week_days %}
+            <div class="d{% if d == today %} today{% endif %}" role="cell">{{ d.day if d else "" }}</div>
+          {% endfor %}{% endfor %}
+        </div>
+        <div class="cal-key">outlined = today</div>
+      </div>
+      <div class="pending-inner">
+        <div class="sub strong">Coming up before payday</div>
+        {{ coming("Add recurring bills and your payday to see them on the calendar and what's due before you're paid.") }}
+      </div>
+    </div>
+  </section>
+
+  {# ---------- Row 4: small widgets ---------- #}
+  <section class="w pending">
+    <h2>Savings goals</h2>
+    {{ coming("Set a target and date (Holiday £1,500 by June) to see progress and how much a month gets you there.") }}
+  </section>
+  <section class="w pending">
+    <h2>ISA allowance</h2>
+    <div class="sub">Tax year ends {{ tax_year_end.strftime("%-d %b %Y") }} · {{ tax_days_left }} day{{ "s" if tax_days_left != 1 }} left</div>
+    {{ coming("Tag ISA deposits to see how much allowance you've used.") }}
+  </section>
+  <section class="w pending">
+    <h2>Debts</h2>
+    {{ coming("Each debt with its balance, APR, payoff date and good/bad label.") }}
   </section>
   <section class="w">
-    <h2>Money in</h2>
-    <div class="big">{{ money(summary.in_pence) }}</div>
-  </section>
-  <section class="w">
-    <h2>Money out</h2>
-    <div class="big">{{ money(summary.out_pence) }}</div>
-  </section>
-  <section class="w">
-    <h2>Spend per day</h2>
-    {% if summary.avg_daily_out_pence is not none %}
-      <div class="big">≈ {{ money(summary.avg_daily_out_pence) }}</div>
-      <div class="sub">over {{ summary.days_so_far }} day{{ "s" if summary.days_so_far != 1 }}</div>
+    <h2>Recent <a class="more" href="/transactions">See all ›</a></h2>
+    {% if recent %}
+    <ul class="list">
+      {% for t in recent %}
+      <li><span class="when">{{ t.date.strftime("%-d %b") }}</span><span class="what">{{ t.category }}</span><span class="amt">{{ amount(t.amount_pence) }}</span></li>
+      {% endfor %}
+    </ul>
     {% else %}
-      <div class="big muted">–</div>
-      <div class="sub">This month hasn't started yet</div>
+      <p class="empty">No transactions yet. <a href="/add">Add your first one</a></p>
     {% endif %}
   </section>
 
-  {# Row 2: where it went, and when #}
+  {# ---------- Row 5: where the money went (not in the mockup; real data today) ---------- #}
   <section class="w medium">
     <h2>Spending by category <a class="more" href="/transactions?month={{ summary.key }}">Details ›</a></h2>
     {% if summary.categories %}
@@ -72,31 +147,12 @@
         {% endfor %}
       </svg>
       <div class="daily-axis"><span>1</span><span>{{ (n + 1) // 2 }}</span><span>{{ n }}</span></div>
-      <p class="sub">Biggest day: {{ money(biggest) }}</p>
+      <p class="sub">
+        Biggest day: {{ money(biggest) }}
+        {% if summary.avg_daily_out_pence is not none %} · ≈ {{ money(summary.avg_daily_out_pence) }} a day on average{% endif %}
+      </p>
     {% else %}
       <p class="empty">Nothing spent yet in {{ summary.label }}.</p>
-    {% endif %}
-  </section>
-
-  {# Row 3: latest entries, whatever the month #}
-  <section class="w wide">
-    <h2>Recent transactions <a class="more" href="/transactions">All ›</a></h2>
-    {% if recent %}
-    <table>
-      <thead><tr><th>Date</th><th>Category</th><th class="hide-narrow">Note</th><th class="num">Amount</th></tr></thead>
-      <tbody>
-      {% for t in recent %}
-        <tr>
-          <td>{{ t.date.strftime("%a %-d %b") }}</td>
-          <td>{{ t.category }}</td>
-          <td class="hide-narrow">{{ t.note or "" }}</td>
-          <td class="num">{{ amount(t.amount_pence) }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-    {% else %}
-      <p class="empty">No transactions yet. <a href="/add">Add your first one</a></p>
     {% endif %}
   </section>
 </div>

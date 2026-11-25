@@ -21,8 +21,14 @@ def test_add_and_see_on_dashboard(client):
     assert r.status_code == 303 and r.headers["location"] == "/"
     page = client.get("/").text
     assert "−£4.20" in page
-    assert "&lt;b&gt;flat white&lt;/b&gt;" in page   # escaped, not rendered as HTML
+    notes = client.get("/transactions").text
+    assert "&lt;b&gt;flat white&lt;/b&gt;" in notes   # escaped, not rendered as HTML
     assert "Spending by category" in page
+    # Mockup layout: every tile is there; unbuilt ones say so instead of faking numbers.
+    for tile in ["Net worth", "Cash", "Debt", "Budget: this week", "Bills:", "Savings goals",
+                 "ISA allowance", "Debts", "Recent"]:
+        assert f"<h2>{tile}" in page, tile
+    assert page.count("Coming soon") == 9
 
 
 def test_save_and_add_another(client):

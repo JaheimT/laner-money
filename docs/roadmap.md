@@ -52,6 +52,15 @@ from anywhere on my tailnet. Done in order:
 4. Docker (M4.1–4.2): Dockerfile, docker-compose.yml, `.env.example`.
 5. HTTPS over Tailscale Serve only (M4.3).
 6. Basic nightly SQLite backups (first part of M4.4).
+7. Dashboard laid out like the M1 control-room mockup. Tiles whose
+   feature isn't built yet show an empty state saying what turns them on
+   (never fake numbers).
+
+Order after the MVP (changed 2026-11-25, so dashboard tiles come alive
+quickest): Budget pot + category limits (from M6) → Accounts (M2.2) with
+Cash / Debt / Net worth tiles (M5) → net worth chart and Debts tile →
+Bills and payday (M8.1–2) → Savings goals (M6.2) and ISA (M7).
+
 Still to do in their own milestones: M1 steps 5–7, the rest of M2,
 the M3.4 security pass, tested restore and update procedure (M4.4).
 
